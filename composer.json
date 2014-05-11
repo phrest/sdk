@@ -1,19 +1,19 @@
 {
-  "name":        "torches/phalcon-api-sdk",
+  "name":        "phrest/sdk",
   "type":        "library",
-  "description": "REST API SDK Package for Phalcon PHP for use with https://github.com/torches/phalcon-api",
+  "description": "REST API SDK Package for Phalcon PHP for use with https://github.com/phrest/api",
   "keywords":    ["phalcon", "rest", "api", "api first", "apigee", "sdk", "sdk generator"],
-  "homepage":    "https://github.com/torches/phalcon-api-sdk",
+  "homepage":    "https://github.com/phrest/sdk",
   "license":     "MIT",
   "authors":     [
     {
-      "name":     "Jay Francis",
-      "homepage": "https://github.com/torches"
+      "name":     "Phrest",
+      "homepage": "https://github.com/phrest"
     }
   ],
   "autoload":    {
     "psr-4": {
-      "PhalconAPISDK\\": "src/"
+      "PhrestSDK\\": "src/"
     }
   },
   "require":     {
