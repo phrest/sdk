@@ -12,7 +12,7 @@ use PhrestAPI\API;
  * This class can be used as a standalone client for HTTP based requests or
  * you can use it for internal API calls by calling API::setApp()
  */
-class SDK
+class PhrestSDK
 {
   const METHOD_GET = 'GET';
   const METHOD_POST = 'POST';
