@@ -5,7 +5,7 @@ namespace PhrestSDK;
 
 use Phalcon\Exception;
 use PhrestAPI\Responses\Response;
-use PhrestAPI\API;
+use PhrestAPI\PhrestAPI;
 
 /**
  * SDK for Phalcon REST API
@@ -19,7 +19,7 @@ class PhrestSDK
   const METHOD_PUT = 'PUT';
   const METHOD_DELETE = 'DELETE';
 
-  /** @var API */
+  /** @var PhrestAPI */
   private $app;
 
   /** @var string */
@@ -28,10 +28,10 @@ class PhrestSDK
   /**
    * Set the API instance
    *
-   * @param API $app
+   * @param PhrestAPI $app
    * @return $this
    */
-  public function setApp(API $app)
+  public function setApp(PhrestAPI $app)
   {
     $this->app = $app;
     $this->app->isInternal = true;
