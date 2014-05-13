@@ -213,4 +213,24 @@ class PhrestSDK
     curl_close($curl);
     return json_decode($curlResponse);
   }
+
+  /**
+   * Generate the SDK
+   */
+  public function generateSDK()
+  {
+    echo PHP_EOL . "Generating SDK..." . PHP_EOL;
+
+    $collections = $this->app->getCollections();
+
+    foreach($collections as $collection)
+    {
+      echo $collection->controller;
+
+      foreach($collection->routes as $route)
+      {
+        echo $route->action;
+      }
+    }
+  }
 }
