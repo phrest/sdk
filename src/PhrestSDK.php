@@ -20,7 +20,7 @@ class PhrestSDK
   const METHOD_DELETE = 'DELETE';
 
   /** @var PhrestAPI */
-  private $app;
+  protected $app;
 
   /** @var string */
   private $url;
