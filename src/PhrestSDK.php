@@ -20,10 +20,18 @@ class PhrestSDK
   const METHOD_DELETE = 'DELETE';
 
   /** @var PhrestAPI */
-  protected $app;
+  public $app;
 
   /** @var string */
-  private $url;
+  public $url;
+
+  /** @var string */
+  public $srcDir;
+
+  public function __construct($srcDir)
+  {
+    $this->srcDir = $srcDir;
+  }
 
   /**
    * Set the API instance
