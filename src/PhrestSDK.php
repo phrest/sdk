@@ -237,8 +237,13 @@ class PhrestSDK
 
       foreach($collection->routes as $route)
       {
-        echo $route->action;
+        echo $route->controllerAction;
       }
     }
+  }
+
+  public function getNamespace()
+  {
+    return __NAMESPACE__;
   }
 }
