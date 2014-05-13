@@ -8,6 +8,7 @@ use Phalcon\Exception;
 use PhrestAPI\Collections\Collection;
 use Zend\Code\Generator\ClassGenerator;
 use Zend\Code\Generator\DocBlockGenerator;
+use Zend\Code\Generator\FileGenerator;
 use Zend\Code\Generator\MethodGenerator;
 use Zend\Code\Generator\ParameterGenerator;
 use Phalcon\Annotations\Adapter\Memory as AnnotationReader;
@@ -21,6 +22,12 @@ class Generator
   {
     $this->sdk = $sdk;
     $this->outputDir = $this->sdk->srcDir . '/' . $this->getNamespace();
+  }
+
+  private function getSDKClassShortName()
+  {
+    $reflect = new \ReflectionClass($this->sdk);
+    return $reflect->getShortName();
   }
 
   private function getNamespace()
@@ -190,13 +197,17 @@ class Generator
 
     foreach($collections as $collection)
     {
+      $className = $this->getSDKClassName($collection->controller);
+
       // Create class for collection
       $docblock = new DocBlockGenerator();
       $docblock->setShortDescription('Phrest auto generated SDK class');
       $class = new ClassGenerator();
       $class
         ->setNamespaceName($this->getFinalNamespace())
-        ->setName($this->getSDKClassName($collection->controller))
+        ->setName($className)
+        ->addUse(get_class($this->sdk))
+        ->setExtendedClass($this->getSDKClassShortName())
         ->setDocblock($docblock);
 
       // Create methods for each action
@@ -238,7 +249,7 @@ class Generator
 
         // Set the method body
         $body = sprintf(
-          'return parent::%s("%s%s"%s)',
+          'return parent::%s("%s%s"%s);',
           $route->type,
           $collection->prefix,
           $uri,
@@ -249,7 +260,15 @@ class Generator
         $class->addMethodFromGenerator($method);
       }
 
-      echo $class->generate();
+      // Save file
+      file_put_contents(
+        $this->outputDir . '/' . $className . '.php',
+        sprintf(
+          "<?php %s%s",
+          PHP_EOL,
+          $class->generate()
+        )
+      );
     }
   }
 }
