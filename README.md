@@ -1,4 +1,4 @@
-PhREST API SDK
+PhREST SDK
 ===============
 
 SDK &amp; SDK Generator for use with your PhREST API https://github.com/phrest
