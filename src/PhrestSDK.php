@@ -111,12 +111,14 @@ class PhrestSDK
 
   /**
    * Makes a POST call based on path/url
-   * todo this is not complete
+   * todo this is not complete, params not used
    * @param $path
+   * @param array $params
+   * @throws \Exception
    * @throws \Phalcon\Exception
    * @return Response
    */
-  public function post($path)
+  public function post($path, $params = [])
   {
     // Get from the internal call if available
     if(isset($this->app))
@@ -139,12 +141,12 @@ class PhrestSDK
 
   /**
    * Makes a PUT call based on path/url
-   * todo this is not complete
+   * todo this is not complete, params not used
    * @param $path
    * @throws \Phalcon\Exception
    * @return Response
    */
-  public function put($path)
+  public function put($path, $params = [])
   {
     // Get from the internal call if available
     if(isset($this->app))
