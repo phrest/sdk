@@ -6,6 +6,7 @@ namespace PhrestSDK;
 use Phalcon\Exception;
 use PhrestAPI\Responses\Response;
 use PhrestAPI\PhrestAPI;
+use Phalcon\DI as PhalconDI;
 
 /**
  * SDK for Phalcon REST API
@@ -28,27 +29,25 @@ class PhrestSDK
   /** @var string */
   public $srcDir;
 
-  private static $instance;
-
   public function __construct($srcDir)
   {
     $this->srcDir = $srcDir;
-
-    self::$instance = $this;
   }
 
   /**
    * @return PhrestSDK
    * @throws \Exception
    */
-  private static function getInstance()
+  public static function getInstance()
   {
-    if(!isset(self::$instance))
+    $di = PhalconDI::getDefault();
+
+    if($sdk = $di->get('sdk'))
     {
-      throw new \Exception('No instance of the SDK available');
+      return $sdk;
     }
 
-    return self::$instance;
+    throw new \Exception('No instance of the SDK available');
   }
 
   /**
@@ -80,6 +79,7 @@ class PhrestSDK
 
   private function getRawResponse($method, $path, $params = [])
   {
+
     // todo see if there is a better way that overriding $_REQUEST
     // Take a backup of the request array
     $request = $_REQUEST;
@@ -112,7 +112,7 @@ class PhrestSDK
    */
   private static function getResponse($method, $path, $params = [])
   {
-    $instance = self::getInstance();
+    $instance = static::getInstance();
 
     // Get from the internal call if available
     if(isset($instance->app))
