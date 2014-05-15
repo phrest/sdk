@@ -3,10 +3,17 @@
 
 namespace PhrestSDK;
 
+use Phalcon\DI;
+use Phalcon\Events\Manager;
 use Phalcon\Exception;
+use Phalcon\Mvc\Dispatcher;
+use Phalcon\Registry;
+use PhrestAPI\Request\PhrestRequest;
 use PhrestAPI\Responses\Response;
 use PhrestAPI\PhrestAPI;
 use Phalcon\DI as PhalconDI;
+use Site\Common\DI\SiteDI;
+use Zend\Stdlib\Request;
 
 /**
  * SDK for Phalcon REST API
@@ -15,11 +22,6 @@ use Phalcon\DI as PhalconDI;
  */
 class PhrestSDK
 {
-  const METHOD_GET = 'GET';
-  const METHOD_POST = 'POST';
-  const METHOD_PUT = 'PUT';
-  const METHOD_DELETE = 'DELETE';
-
   /** @var PhrestAPI */
   public $app;
 
@@ -42,7 +44,9 @@ class PhrestSDK
   {
     $di = PhalconDI::getDefault();
 
-    if($sdk = $di->get('sdk'))
+    if(
+    $sdk = $di->get('sdk')
+    )
     {
       return $sdk;
     }
@@ -79,24 +83,31 @@ class PhrestSDK
 
   private function getRawResponse($method, $path, $params = [])
   {
-
-    // todo see if there is a better way that overriding $_REQUEST
-    // Take a backup of the request array
+    // Backup super globals
     $request = $_REQUEST;
+    $post = $_POST;
+    $get = $_GET;
 
     // Override the request params
     if(isset($params) && count($params) > 0)
     {
       foreach($params as $key => $val)
       {
-        $_REQUEST[$key] = $val;
+        $_POST[$key] = $val;
       }
     }
-    $_REQUEST['type'] = 'raw';
 
+    // Set HTTP method in GET
+    $_GET['method'] = $method;
+
+    // Get response from API
     $response = $this->app->handle($path);
 
+    // Restore super globals
     $_REQUEST = $request;
+    $_POST = $post;
+    $_GET = $get;
+
     return $response;
   }
 
@@ -133,7 +144,6 @@ class PhrestSDK
     );
   }
 
-
   /**
    * Makes a GET call based on path/url
    * @param $path
@@ -141,7 +151,7 @@ class PhrestSDK
    */
   public static function get($path)
   {
-    return self::getResponse(self::METHOD_GET, $path);
+    return self::getResponse(PhrestRequest::METHOD_GET, $path);
   }
 
   /**
@@ -152,7 +162,7 @@ class PhrestSDK
    */
   public static function post($path, $params = [])
   {
-    return self::getResponse(self::METHOD_GET, $path, $params);
+    return self::getResponse(PhrestRequest::METHOD_POST, $path, $params);
   }
 
   /**
@@ -164,7 +174,19 @@ class PhrestSDK
    */
   public static function put($path, $params = [])
   {
-    return self::getResponse(self::METHOD_GET, $path);
+    return self::getResponse(PhrestRequest::METHOD_PUT, $path);
+  }
+
+  /**
+   * Makes a PATCH call based on path/url
+   * @param $path
+   * @param array $params
+   * @throws \Phalcon\Exception
+   * @return Response
+   */
+  public static function patch($path, $params = [])
+  {
+    return self::getResponse(PhrestRequest::METHOD_PATCH, $path, $params);
   }
 
   /**
@@ -175,7 +197,7 @@ class PhrestSDK
    */
   public static function delete($path)
   {
-    return self::getResponse(self::METHOD_DELETE, $path);
+    return self::getResponse(PhrestRequest::METHOD_DELETE, $path);
   }
 
   /**
@@ -187,7 +209,11 @@ class PhrestSDK
    * @throws \Exception
    * @return string
    */
-  private function getHTTPResponse($method = self::METHOD_GET, $path, $params = [])
+  private function getHTTPResponse(
+    $method = PhrestRequest::METHOD_GET,
+    $path,
+    $params = []
+  )
   {
     // Prepare curl
     $curl = curl_init($this->url . $path);
