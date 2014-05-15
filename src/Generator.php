@@ -414,7 +414,7 @@ class Generator
     {
       $param = new Tag\GenericTag();
       $param->setName('postParam');
-      $param->setContent('$' . $paramName . ' ' . $paramType);
+      $param->setContent(sprintf('"%s" %s', $paramName, $paramType));
       $methodDocBlock->setTag($param);
     }
 
