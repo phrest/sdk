@@ -81,6 +81,21 @@ class PhrestSDK
     return $this;
   }
 
+  /**
+   * Gets a raw response from the internal API
+   * This will trick Phalcon into thinking its a
+   * real PUT, POST, PATCH, GET or DELETE request
+   * It will override the Default DI (Which will be the current site)
+   * and will restore everything after the request
+   *
+   * It seems hacky, but I am not sure if there is any better way, please
+   * submit a pull request if you can improve! :)
+   *
+   * @param $method
+   * @param $path
+   * @param array $params
+   * @return mixed
+   */
   private function getRawResponse($method, $path, $params = [])
   {
     // Backup super globals
@@ -99,9 +114,21 @@ class PhrestSDK
 
     // Set HTTP method in GET
     $_GET['method'] = $method;
+    $_REQUEST['type'] = 'raw';
+
+    // Get current DI
+    $di = DI::getDefault();
+
+    // Set API DI to the default, this is required for models etc.
+    // As Phalcon will get the default DI to perform actions
+    $apiDI = $di->get('sdk')->app->getDI();
+    $di->setDefault($apiDI);
 
     // Get response from API
     $response = $this->app->handle($path);
+
+    // Restore original DI
+    DI::setDefault($di);
 
     // Restore super globals
     $_REQUEST = $request;
