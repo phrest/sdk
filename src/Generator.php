@@ -6,6 +6,7 @@ namespace PhrestSDK;
 use Phalcon\Annotations\Reader;
 use Phalcon\Exception;
 use PhrestAPI\Collections\Collection;
+use PhrestAPI\Collections\CollectionRoute;
 use Zend\Code\Generator\ClassGenerator;
 use Zend\Code\Generator\DocBlock\Tag;
 use Zend\Code\Generator\DocBlockGenerator;
@@ -16,24 +17,6 @@ use Phalcon\Annotations\Adapter\Memory as AnnotationReader;
 
 class Generator
 {
-  // Desired SDK Class Name
-  const SDK_CLASS_NAME = 'className';
-
-  // Class description
-  const SDK_CLASS_DESCRIPTION = 'description';
-
-  //Method Parameter
-  const SDK_METHOD_PARAM = 'methodParam';
-
-  // Action Post Parameter
-  const SDK_POST_PARAM = 'postParam';
-
-  // Method URI
-  const SDK_METHOD_URI = 'methodURI';
-
-  // Method description
-  const SDK_METHOD_DESCRIPTION = 'description';
-
   private $sdk;
   private $outputDir;
   private $indentation;
@@ -42,396 +25,151 @@ class Generator
   {
     $this->sdk = $sdk;
 
-    // Set the indentation of code
-    $this->indentation = '  ';
-
-    // Set the output directory
-    $this->outputDir = $this->sdk->srcDir . '/' . $this->getNamespace();
-  }
-
-  private function getSDKClassShortName()
-  {
-    $reflect = new \ReflectionClass($this->sdk);
-    return $reflect->getShortName();
-  }
-
-  private function getNamespace()
-  {
-    // Default namespace is the same as the SDK class
-    $reflect = new \ReflectionClass($this->sdk);
-    return $reflect->getShortName();
-  }
-
-  private function getFinalNamespace()
-  {
-    // Default namespace is the same as the SDK class
-    $reflect = new \ReflectionClass($this->sdk);
-    return
-      $namespace = $reflect->getNamespaceName() . '\\' . $reflect->getShortName(
-        );
-  }
-
-  public function generate()
-  {
-    echo PHP_EOL . "Generating SDK to " . $this->outputDir . PHP_EOL;
-
-    // Make directory
-    $this->createOutputDir();
-
-    // Generate classes
-    $this->generateClasses();
+    $this
+      ->setDefaultOutputDir()
+      ->setDefaultIndentation();
   }
 
   /**
-   * Create the output directory
+   * Set the default indentation
+   *
    * @return $this
    */
-  private function createOutputDir()
+  public function setDefaultIndentation()
   {
-    // todo fail if already created
-    @mkdir($this->outputDir, 0777, true);
+    $this->indentation = '  ';
 
     return $this;
   }
 
   /**
-   * Gets the SDK Class Name
-   * @param $class
-   * @return array|string
-   * @throws \Exception
-   */
-  private function getSDKClassName($class)
-  {
-    $className = $this->getClassAnnotation($class, self::SDK_CLASS_NAME);
-
-    if(!$className)
-    {
-      $className = 'UseAnnotation_' . self::SDK_CLASS_NAME . '_' . uniqid();
-    }
-
-    return $className;
-  }
-
-  private function getClassDescription($class)
-  {
-    $className = $this->getClassAnnotation($class, self::SDK_CLASS_DESCRIPTION);
-
-    if(!$className)
-    {
-      $className
-        = 'UseAnnotation_' . self::SDK_CLASS_DESCRIPTION . '_' . uniqid();
-    }
-
-    return $className;
-  }
-
-  /**
-   * Get Annotation Reader for class
-   * @param $class
-   * @return \Phalcon\Annotations\Reflection
-   */
-  private function getClassAnnotationReader($class)
-  {
-    return (new AnnotationReader())->get($class);
-  }
-
-  /**
-   * Gets a Class Annotation by key
-   * @param $class
-   * @param $annotationKey
-   * @return bool|mixed
-   */
-  private function getClassAnnotation($class, $annotationKey)
-  {
-    $annotations = $this
-      ->getClassAnnotationReader($class)
-      ->getClassAnnotations();
-
-    if(!$annotations)
-    {
-      return false;
-    }
-
-    try
-    {
-      return $annotations->get($annotationKey)->getArgument(0);
-    }
-    catch(\Exception $e)
-    {
-      return false;
-    }
-  }
-
-  /**
-   * Get a list of method parameters
+   * Set the default output directory
    *
-   * @param $class
-   * @param $method
-   * @return array
+   * @return $this
    */
-  private function getMethodParams($class, $method)
+  public function setDefaultOutputDir()
   {
-    $reader = $this->getClassAnnotationReader($class);
-    $methodParams = $reader->getMethodsAnnotations();
+    $this->outputDir = $this->sdk->srcDir;
 
-    if(!isset($methodParams[$method]))
-    {
-      return [];
-    }
-
-    $actionParams = $methodParams[$method]->getAll(self::SDK_METHOD_PARAM);
-
-    $params = [];
-    foreach($actionParams as $param)
-    {
-      $params[$param->getArgument(0)] = 'string';
-    }
-
-    return $params;
+    return $this;
   }
 
   /**
-   * Gets a list of method post params
+   * Set the output directory for the SDK
    *
-   * @param $class
-   * @param $method
-   * @return array
-   */
-  private function getPostParams($class, $method)
-  {
-    $reader = $this->getClassAnnotationReader($class);
-    $methodParams = $reader->getMethodsAnnotations();
-
-    if(!isset($methodParams[$method]))
-    {
-      return [];
-    }
-
-    $actionParams = $methodParams[$method]->getAll(self::SDK_POST_PARAM);
-
-    $params = [];
-    foreach($actionParams as $param)
-    {
-      $params[$param->getArgument(0)] = 'string';
-    }
-
-    return $params;
-  }
-
-  /**
-   * Get the action URI
+   * @param $outputDir
    *
-   * @param $class
-   * @param $method
-   * @return mixed|string
+   * @return $this
    */
-  private function getMethodURI($class, $method)
+  public function setOutputDir($outputDir)
   {
-    $reader = $this->getClassAnnotationReader($class);
-    $methodParams = $reader->getMethodsAnnotations();
+    $this->outputDir = $outputDir;
 
-    if(!isset($methodParams[$method]))
-    {
-      return '';
-    }
-
-    try
-    {
-      return $methodParams[$method]->get(self::SDK_METHOD_URI)->getArgument(0);
-    }
-    catch(\Exception $e)
-    {
-      return '';
-    }
+    return $this;
   }
 
   /**
-   * Get a method description
-   * @param $class
-   * @param $method
-   * @return mixed|string
+   * Prints a message to the console
+   *
+   * @param $message
    */
-  private function getMethodDescription($class, $method)
+  private function printMessage($message)
   {
-    $reader = $this->getClassAnnotationReader($class);
-    $methodParams = $reader->getMethodsAnnotations();
-
-    if(!isset($methodParams[$method]))
-    {
-      return '';
-    }
-
-    try
-    {
-      return $methodParams[$method]->get(self::SDK_METHOD_DESCRIPTION)
-        ->getArgument(0);
-    }
-    catch(\Exception $e)
-    {
-      return '';
-    }
+    printf('%s%s', PHP_EOL, $message);
   }
 
   /**
-   * @throws \Exception
+   * Generate the SDK
    */
-  private function generateClasses()
+  public function generate()
   {
-    $collections = $this->sdk->app->getCollections();
+    $this->printMessage("Generating SDK...");
 
+    $collections = $this->getCollections();
+
+    // Validate there is anything to do
+    if(count($collections) === 0)
+    {
+      $this->printMessage('No Collections to process');
+      exit;
+    }
+
+    // Generate SDK classes
     foreach($collections as $collection)
     {
-      $className = $this->getSDKClassName($collection->controller);
+      $controllerClass = $collection->controller;
 
-      // Create class for collection
-      $classDocblock = new DocBlockGenerator();
-      $classDocblock->setShortDescription(
-        $this->getClassDescription($collection->controller)
-      );
-      $class = new ClassGenerator();
-      $class
-        ->setNamespaceName($this->getFinalNamespace())
-        ->setName($className)
-        ->addUse(get_class($this->sdk))
-        ->setExtendedClass($this->getSDKClassShortName())
-        ->setDocblock($classDocblock);
-
-      // Create methods for each action
-      foreach($collection->routes as $route)
+      // If there are no routes to process
+      if(count($collection->routes) === 0)
       {
-        // Get action params
-        $methodParams = $this->getMethodParams(
-          $collection->controller,
-          $route->controllerAction
+        $this->printMessage(
+          sprintf("No actions to process for %s", $controllerClass)
         );
 
-        // Create the method
-        $method = new MethodGenerator();
-        $method->setIndentation($this->indentation);
-        $method->setName($route->controllerAction);
-        $method->setStatic(true);
-
-        // Add action params
-        foreach($methodParams as $paramName => $paramType)
-        {
-          $methodParam = new ParameterGenerator($paramName, $paramType);
-          $method->setParameter($methodParam);
-        }
-
-        // Get uri
-        $uri = $this->getMethodURI(
-          $collection->controller,
-          $route->controllerAction
-        );
-
-        // Add post params
-        $postParams = $this->getPostParams(
-          $collection->controller,
-          $route->controllerAction
-        );
-        if(count($postParams) > 0)
-        {
-          $methodParam = new ParameterGenerator('params', null, []);
-          $method->setParameter($methodParam);
-        }
-
-        // Set the method body
-        $body = sprintf(
-          'return parent::%s("%s%s"%s);',
-          $route->type,
-          $collection->prefix,
-          $uri,
-          count($postParams) > 0 ? ', $params' : null
-        );
-        $method->setBody($body);
-
-        // Set the method docblock
-        $method->setDocBlock(
-          $this->getMethodDocBlock(
-            $collection->controller,
-            $route->controllerAction
-          )
-        );
-
-        // Add method to class
-        $class->addMethodFromGenerator($method);
+        continue;
       }
 
-      // Save class to file
-      $this->saveClass($class, $className);
-
+      // Generate requests
+      foreach($collection->routes as $route)
+      {
+        $this->generateRequestClass($collection, $route);
+      }
     }
   }
 
   /**
-   * Save a class to file
+   * Generate a class for the controller action
    *
-   * @param $class
-   * @param $className
+   * @param Collection      $collection
+   * @param CollectionRoute $route
+   *
+   * @return $this
    */
-  private function saveClass(ClassGenerator $class, $className)
+  private function generateRequestClass(
+    Collection $collection,
+    CollectionRoute $route
+  )
   {
-    file_put_contents(
-      $this->outputDir . '/' . $className . '.php',
-      sprintf(
-        "<?php %s%s",
-        PHP_EOL,
-        $class->generate()
-      )
+    // Build the class name
+    $className = $this->getRequestClassName($collection, $route);
+    $this->printMessage(sprintf('Generating Request: %s', $className));
+
+    return $this;
+  }
+
+  /**
+   * Get the request class name for a controller action
+   * @param Collection      $collection
+   * @param CollectionRoute $route
+   */
+  private function getRequestClassName(
+    Collection $collection,
+    CollectionRoute $route
+  )
+  {
+
+    // Get the controller class name
+    $controller = new $collection->controller;
+    $controllerReflection = new \ReflectionClass($controller);
+    $controllerClassName =  $controllerReflection->getShortName();
+    $controllerClassName = str_replace('Controller', '', $controllerClassName);
+
+    return sprintf(
+      '%s%sRequest',
+      $controllerClassName,
+      ucfirst($route->controllerAction)
     );
   }
 
   /**
-   * Get the docblock object for a method
+   * Get the API Collections
    *
-   * @param $class
-   * @param $method
-   * @return DocBlockGenerator
+   * @return \PhrestAPI\Collections\Collection[]
+   * @throws \Exception
    */
-  private function getMethodDocBlock($class, $method)
+  private function getCollections()
   {
-    $methodDocBlock = new DocBlockGenerator();
-
-    // Set method params
-    $methodParams = $this->getMethodParams(
-      $class,
-      $method
-    );
-    foreach($methodParams as $paramName => $paramType)
-    {
-      $param = new Tag\GenericTag();
-      $param->setName('param');
-      $param->setContent('$' . $paramName . ' ' . $paramType);
-      $methodDocBlock->setTag($param);
-    }
-
-    // Set method post params
-    $postParams = $this->getPostParams(
-      $class,
-      $method
-    );
-    foreach($postParams as $paramName => $paramType)
-    {
-      $param = new Tag\GenericTag();
-      $param->setName('postParam');
-      $param->setContent(sprintf('"%s" %s', $paramName, $paramType));
-      $methodDocBlock->setTag($param);
-    }
-
-    // Set method short description
-    $methodDescription = $this->getMethodDescription(
-      $class,
-      $method
-    );
-    if(!$methodDescription)
-    {
-      $methodDescription
-        = 'Please provide a method description using the @'
-        . self::SDK_METHOD_DESCRIPTION . '("...") annotation';
-    }
-    $methodDocBlock->setShortDescription($methodDescription);
-
-    return $methodDocBlock;
+    return $this->sdk->app->getCollections();
   }
 }
 
