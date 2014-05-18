@@ -7,6 +7,7 @@ use Phalcon\Annotations\Reader;
 use Phalcon\Exception;
 use PhrestAPI\Collections\Collection;
 use PhrestAPI\Collections\CollectionRoute;
+use PhrestAPI\Request\PhrestRequest;
 use Zend\Code\Generator\ClassGenerator;
 use Zend\Code\Generator\DocBlock\Tag;
 use Zend\Code\Generator\DocBlockGenerator;
@@ -15,6 +16,11 @@ use Zend\Code\Generator\MethodGenerator;
 use Zend\Code\Generator\ParameterGenerator;
 use Phalcon\Annotations\Adapter\Memory as AnnotationReader;
 use Zend\Code\Generator\DocBlock\Tag\GenericTag as DocBlockTag;
+use PhrestSDK\Request\GETRequest;
+use PhrestSDK\Request\POSTRequest;
+use PhrestSDK\Request\DELETERequest;
+use PhrestSDK\Request\PATCHRequest;
+use PhrestSDK\Request\Request;
 
 class Generator
 {
@@ -98,7 +104,10 @@ class Generator
     ];
     foreach($directories as $directory)
     {
-      mkdir($directory, 0777, true);
+      if(!file_exists($directory))
+      {
+        mkdir($directory, 0777, true);
+      }
     }
 
     return $this;
@@ -171,13 +180,40 @@ class Generator
       //->setNamespaceName($this->getFinalNamespace())
       ->setName($className)
       ->addUse(get_class($this->sdk))
-      //->setExtendedClass($this->getSDKClassShortName())
+      ->setExtendedClass($this->getActionExtendedClassName($route))
       ->setDocblock($docBlock);
 
     // Save class
     $this->saveClass($class);
 
     return $this;
+  }
+
+  /**
+   * Get the extended class type for an action
+   *
+   * @param CollectionRoute $route
+   *
+   * @throws \Exception
+   * @return string
+   */
+  private function getActionExtendedClassName(CollectionRoute $route)
+  {
+    switch($route->type)
+    {
+      case Request::METHOD_GET:
+        return GETRequest::class;
+      case Request::METHOD_POST:
+        return POSTRequest::class;
+      case Request::METHOD_PATCH:
+        return PATCHRequest::class;
+      case Request::METHOD_DELETE:
+        return DELETERequest::class;
+    }
+
+    throw new \Exception(
+      sprintf('No HTTP Method found for %s', $route->controllerAction)
+    );
   }
 
   /**
