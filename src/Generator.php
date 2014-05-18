@@ -18,6 +18,8 @@ use Zend\Code\Generator\DocBlock\Tag\GenericTag as DocBlockTag;
 
 class Generator
 {
+  const CLASS_TYPE_REQUEST = 'Request';
+
   // Action description
   const DOC_ACTION_DESCRIPTION = 'description';
   const DOC_ACTION_METHOD_PARAM = 'methodParam';
@@ -84,11 +86,33 @@ class Generator
   }
 
   /**
+   * Create the required directories
+   *
+   * @return $this
+   */
+  private function createDirectories()
+  {
+    $directories = [
+      $this->outputDir,
+      sprintf('%s/%s', $this->outputDir, self::CLASS_TYPE_REQUEST),
+    ];
+    foreach($directories as $directory)
+    {
+      mkdir($directory, 0777, true);
+    }
+
+    return $this;
+  }
+
+  /**
    * Generate the SDK
    */
   public function generate()
   {
-    $this->printMessage("Generating SDK...");
+    $this->printMessage("Generating SDK");
+
+    $this->printMessage("Creating directories");
+    $this->createDirectories();
 
     $collections = $this->getCollections();
 
@@ -141,9 +165,46 @@ class Generator
     // Get the class docblock
     $docBlock = $this->getRequestClassDocBlock($collection, $route);
 
-    echo $docBlock->generate();
+    // Generate the class
+    $class = new ClassGenerator();
+    $class
+      //->setNamespaceName($this->getFinalNamespace())
+      ->setName($className)
+      ->addUse(get_class($this->sdk))
+      //->setExtendedClass($this->getSDKClassShortName())
+      ->setDocblock($docBlock);
+
+    // Save class
+    $this->saveClass($class);
 
     return $this;
+  }
+
+  /**
+   * Save a class to file
+   *
+   * @param ClassGenerator $class
+   * @param string         $type
+   *
+   * @return int
+   */
+  private function saveClass(
+    ClassGenerator $class,
+    $type = self::CLASS_TYPE_REQUEST
+  )
+  {
+    $className = $class->getName();
+    $fileName = sprintf('%s/%s/%s.php', $this->outputDir, $type, $className);
+    $fileContent = sprintf(
+      "<?php %s%s",
+      PHP_EOL,
+      $class->generate()
+    );
+
+    return file_put_contents(
+      $fileName,
+      $fileContent
+    );
   }
 
   /**
