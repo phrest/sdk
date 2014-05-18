@@ -14,7 +14,7 @@ use Zend\Code\Generator\MethodGenerator;
 use Zend\Code\Generator\ParameterGenerator;
 use Phalcon\Annotations\Adapter\Memory as AnnotationReader;
 
-class Generator
+class GeneratorOld
 {
   // Desired SDK Class Name
   const SDK_CLASS_NAME = 'className';
