@@ -259,6 +259,8 @@ class Generator
       $param = new ParameterGenerator();
       $param->setName($paramAnnotation);
       $param->setType('string');
+      $param->setIndentation($this->indentation);
+
       $params[] = $param;
     }
 
@@ -293,6 +295,7 @@ class Generator
       $property = new PropertyGenerator();
       $property->setName($paramAnnotation);
       $property->setDefaultValue($this->runId);
+      $property->setIndentation($this->indentation);
 
       $properties[] = $property;
     }
@@ -637,6 +640,43 @@ class Generator
   }
 
   /**
+   * Build the __construct for the request class
+   *
+   * @param Collection      $collection
+   * @param CollectionRoute $route
+   *
+   * @return MethodGenerator
+   * @throws \Exception
+   */
+  private function getRequestClassConstruct(
+    Collection $collection,
+    CollectionRoute $route
+  )
+  {
+    if($this->isStaticRoute($route))
+    {
+      throw new \Exception('Constructor for a static call?');
+    }
+
+    // Build method
+    $method = new MethodGenerator();
+    $method->setIndentation($this->indentation);
+    $method->setName('__construct');
+
+    // Add params
+    $methodParams = $this->getActionMethodParamGenerators($collection, $route);
+    if($methodParams)
+    {
+      $method->setParameters($methodParams);
+    }
+
+    // Set body
+    $method->setBody('$this->path = "sdfsd";');
+
+    return $method;
+  }
+
+  /**
    * Generate a class for the controller action
    *
    * @param Collection      $collection
@@ -661,6 +701,7 @@ class Generator
       ->setNamespaceName($this->getRequestClassNamespace($collection))
       ->setName($className)
       ->addUse(get_class($this->sdk))
+      ->setIndentation($this->indentation)
       ->setExtendedClass($this->getActionExtendedClassName($route))
       ->setDocblock($docBlock);
 
@@ -677,14 +718,19 @@ class Generator
         $class->addMethodFromGenerator($method);
       }
     }
-    // Add public properties for parameters
     else
     {
+      // Add public properties for parameters
       $properties = $this->getActionPostParamProperties($collection, $route);
       if($properties)
       {
         $class->addProperties($properties);
       }
+
+      // Add constructor method
+      $class->addMethodFromGenerator(
+        $this->getRequestClassConstruct($collection, $route)
+      );
     }
 
     // Save class
