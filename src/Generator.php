@@ -309,15 +309,24 @@ class Generator
    * @param Collection      $collection
    * @param CollectionRoute $route
    *
+   * @throws \Exception
    * @return string
    */
   private function getMethodURI(Collection $collection, CollectionRoute $route)
   {
-    return $this->getActionAnnotation(
+    $methodURI = $this->getActionAnnotation(
       $collection,
       $route,
       self::DOC_ACTION_METHOD_URI
     );
+
+    if(!$methodURI)
+    {
+      // Default value
+      return $route->routePattern;
+    }
+
+    return $methodURI;
   }
 
   /**
@@ -671,7 +680,11 @@ class Generator
     }
 
     // Set body
-    $method->setBody('$this->path = "sdfsd";');
+    $body = sprintf(
+      '$this->path = "%s";',
+      $this->getMethodURI($collection, $route)
+    );
+    $method->setBody($body);
 
     return $method;
   }
