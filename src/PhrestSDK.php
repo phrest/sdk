@@ -72,7 +72,7 @@ class PhrestSDK
   public function setApp(PhrestAPI $app)
   {
     $this->app = $app;
-    $this->app->isInternal = true;
+    $this->app->isInternalRequest = true;
 
     return $this;
   }
