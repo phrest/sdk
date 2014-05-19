@@ -22,6 +22,8 @@ use PhrestSDK\Request\POSTRequest;
 use PhrestSDK\Request\DELETERequest;
 use PhrestSDK\Request\PATCHRequest;
 use PhrestSDK\Request\Request;
+use Zend\Code\Generator\PropertyGenerator;
+use Zend\Code\Generator\PropertyValueGenerator;
 
 class Generator
 {
@@ -30,11 +32,14 @@ class Generator
   // Action description
   const DOC_ACTION_DESCRIPTION = 'description';
   const DOC_ACTION_METHOD_PARAM = 'methodParam';
+  const DOC_ACTION_POST_PARAM = 'postParam';
   const DOC_ACTION_METHOD_URI = 'methodURI';
 
   private $sdk;
   private $outputDir;
   private $indentation;
+
+  private $runId;
 
   /**
    * Base namespace
@@ -47,6 +52,9 @@ class Generator
 
   public function __construct(PhrestSDK $sdk, $namespace = 'SDK')
   {
+    // Run ID used for string manipulation on output :( hacky but will do
+    $this->runId = uniqid() . time();
+
     $this->sdk = $sdk;
     $this->namespace = $namespace;
 
@@ -159,7 +167,7 @@ class Generator
     $method->setStatic(true);
 
     // Get method params
-    $methodParams = $this->getActionMethodParams($collection, $route);
+    $methodParams = $this->getActionMethodParamGenerators($collection, $route);
     if($methodParams)
     {
       $method->setParameters($methodParams);
@@ -186,23 +194,57 @@ class Generator
   }
 
   /**
-   * Get the action method params
+   * @param Collection      $collection
+   * @param CollectionRoute $route
+   *
+   * @return array|bool
+   */
+  public function getActionMethodParams(
+    Collection $collection,
+    CollectionRoute $route
+  )
+  {
+    return $this->getActionAnnotations(
+      $collection,
+      $route,
+      self::DOC_ACTION_METHOD_PARAM
+    );
+  }
+
+  /**
+   * Get action post parameters
    *
    * @param Collection      $collection
    * @param CollectionRoute $route
    *
    * @return array|bool
    */
-  private function getActionMethodParams(
+  public function getActionPostParams(
     Collection $collection,
     CollectionRoute $route
   )
   {
-    $methodParamAnnotations = $this->getActionAnnotations(
+    return $this->getActionAnnotations(
       $collection,
       $route,
-      self::DOC_ACTION_METHOD_PARAM
+      self::DOC_ACTION_POST_PARAM
     );
+  }
+
+  /**
+   * Get the action method params
+   *
+   * @param Collection      $collection
+   * @param CollectionRoute $route
+   *
+   * @return ParameterGenerator[]|bool
+   */
+  private function getActionMethodParamGenerators(
+    Collection $collection,
+    CollectionRoute $route
+  )
+  {
+    $methodParamAnnotations = $this->getActionMethodParams($collection, $route);
 
     if(!$methodParamAnnotations)
     {
@@ -221,6 +263,41 @@ class Generator
     }
 
     return $params;
+  }
+
+  /**
+   * Get the action post params
+   *
+   * @param Collection      $collection
+   * @param CollectionRoute $route
+   *
+   * @return array
+   */
+  private function getActionPostParamProperties(
+    Collection $collection,
+    CollectionRoute $route
+  )
+  {
+    $methodParamAnnotations = $this->getActionPostParams($collection, $route);
+
+    if(!$methodParamAnnotations)
+    {
+      return false;
+    }
+
+    // Generate properties
+    $properties = [];
+    foreach($methodParamAnnotations as $paramAnnotation)
+    {
+      // todo handle param types here
+      $property = new PropertyGenerator();
+      $property->setName($paramAnnotation);
+      $property->setDefaultValue($this->runId);
+
+      $properties[] = $property;
+    }
+
+    return $properties;
   }
 
   /**
@@ -282,16 +359,33 @@ class Generator
   {
     $className = $class->getName();
     $fileName = sprintf('%s/%s/%s.php', $this->outputDir, $type, $className);
-    $fileContent = sprintf(
+
+    return file_put_contents(
+      $fileName,
+      $this->getClassString($class)
+    );
+  }
+
+  /**
+   * Filter the class body before saving out to file
+   *
+   * @param \Zend\Code\Generator\ClassGenerator $class
+   *
+   * @return string
+   */
+  private function getClassString(ClassGenerator $class)
+  {
+    // Create PHP class
+    $content = sprintf(
       "<?php %s%s",
       PHP_EOL,
       $class->generate()
     );
 
-    return file_put_contents(
-      $fileName,
-      $fileContent
-    );
+    // Unset vars that should not have a value, not handled by zend code :(
+    $content = str_replace(sprintf(" = '%s'", $this->runId), '', $content);
+
+    return $content;
   }
 
   /**
@@ -570,7 +664,7 @@ class Generator
       ->setExtendedClass($this->getActionExtendedClassName($route))
       ->setDocblock($docBlock);
 
-    // Generate static method
+    // Generate single static method
     if($this->isStaticRoute($route))
     {
       // Add use statement for method
@@ -581,6 +675,15 @@ class Generator
       if($method)
       {
         $class->addMethodFromGenerator($method);
+      }
+    }
+    // Add public properties for parameters
+    else
+    {
+      $properties = $this->getActionPostParamProperties($collection, $route);
+      if($properties)
+      {
+        $class->addProperties($properties);
       }
     }
 
