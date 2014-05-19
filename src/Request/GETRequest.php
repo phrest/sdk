@@ -5,7 +5,7 @@ namespace PhrestSDK\Request;
 
 class GETRequest extends Request
 {
-  public function get()
+  public static function get()
   {
     // todo
   }

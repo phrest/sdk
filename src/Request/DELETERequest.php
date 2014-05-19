@@ -5,7 +5,7 @@ namespace PhrestSDK\Request;
 
 class DELETERequest extends Request
 {
-  public function delete()
+  public static function delete()
   {
     // todo
   }

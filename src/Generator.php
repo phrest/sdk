@@ -8,6 +8,7 @@ use Phalcon\Exception;
 use PhrestAPI\Collections\Collection;
 use PhrestAPI\Collections\CollectionRoute;
 use PhrestAPI\Request\PhrestRequest;
+use PhrestSDK\Request\RequestOptions;
 use Zend\Code\Generator\ClassGenerator;
 use Zend\Code\Generator\DocBlock\Tag;
 use Zend\Code\Generator\DocBlockGenerator;
@@ -29,10 +30,13 @@ class Generator
   // Action description
   const DOC_ACTION_DESCRIPTION = 'description';
   const DOC_ACTION_METHOD_PARAM = 'methodParam';
+  const DOC_ACTION_METHOD_URI = 'methodURI';
 
   private $sdk;
   private $outputDir;
   private $indentation;
+
+  private $staticMethodRequests = [Request::METHOD_GET, Request::METHOD_DELETE];
 
   public function __construct(PhrestSDK $sdk)
   {
@@ -98,6 +102,8 @@ class Generator
    */
   private function createDirectories()
   {
+    $this->printMessage("Creating directories");
+
     $directories = [
       $this->outputDir,
       sprintf('%s/%s', $this->outputDir, self::CLASS_TYPE_REQUEST),
@@ -114,79 +120,116 @@ class Generator
   }
 
   /**
-   * Generate the SDK
+   * Static routes, such as GET or DELETE request
+   *
+   * @param CollectionRoute $route
+   *
+   * @return bool
    */
-  public function generate()
+  private function isStaticRoute(CollectionRoute $route)
   {
-    $this->printMessage("Generating SDK");
-
-    $this->printMessage("Creating directories");
-    $this->createDirectories();
-
-    $collections = $this->getCollections();
-
-    // Validate there is anything to do
-    if(count($collections) === 0)
-    {
-      $this->printMessage('No Collections to process');
-      exit;
-    }
-
-    // Generate SDK classes
-    foreach($collections as $collection)
-    {
-      $controllerClass = $collection->controller;
-
-      // If there are no routes to process
-      if(count($collection->routes) === 0)
-      {
-        $this->printMessage(
-          sprintf("No actions to process for %s", $controllerClass)
-        );
-
-        continue;
-      }
-
-      // Generate requests
-      foreach($collection->routes as $route)
-      {
-        $this->generateRequestClass($collection, $route);
-      }
-    }
+    return in_array($route->type, $this->staticMethodRequests);
   }
 
   /**
-   * Generate a class for the controller action
+   * Generate a static method call
    *
    * @param Collection      $collection
    * @param CollectionRoute $route
    *
-   * @return $this
+   * @return MethodGenerator
    */
-  private function generateRequestClass(
+  private function getStaticMethodCall(
     Collection $collection,
     CollectionRoute $route
   )
   {
-    $className = $this->getRequestClassName($collection, $route);
-    $this->printMessage(sprintf('Generating Request: %s', $className));
+    // Create the method
+    $method = new MethodGenerator();
+    $method->setIndentation($this->indentation);
+    $method->setName(strtolower($route->type));
+    $method->setStatic(true);
 
-    // Get the class docblock
-    $docBlock = $this->getRequestClassDocBlock($collection, $route);
+    // Get method params
+    $methodParams = $this->getActionMethodParams($collection, $route);
+    if($methodParams)
+    {
+      $method->setParameters($methodParams);
+    }
 
-    // Generate the class
-    $class = new ClassGenerator();
-    $class
-      //->setNamespaceName($this->getFinalNamespace())
-      ->setName($className)
-      ->addUse(get_class($this->sdk))
-      ->setExtendedClass($this->getActionExtendedClassName($route))
-      ->setDocblock($docBlock);
+    // Request options param
+    $optionsParam = new ParameterGenerator();
+    $optionsParam->setName('options');
+    $optionsParam->setDefaultValue(null);
+    $optionsParam->setType('RequestOptions');
+    $method->setParameter($optionsParam);
 
-    // Save class
-    $this->saveClass($class);
+    // Generate body
+    $body = sprintf(
+      'return self::%s("%s%s", $options);',
+      strtolower($route->type),
+      $collection->prefix,
+      $this->getMethodURI($collection, $route)
+    );
 
-    return $this;
+    $method->setBody($body);
+
+    return $method;
+  }
+
+  /**
+   * Get the action method params
+   *
+   * @param Collection      $collection
+   * @param CollectionRoute $route
+   *
+   * @return array|bool
+   */
+  private function getActionMethodParams(
+    Collection $collection,
+    CollectionRoute $route
+  )
+  {
+    $methodParamAnnotations = $this->getActionAnnotations(
+      $collection,
+      $route,
+      self::DOC_ACTION_METHOD_PARAM
+    );
+
+    if(!$methodParamAnnotations)
+    {
+      return false;
+    }
+
+    // Generate params
+    $params = [];
+    foreach($methodParamAnnotations as $paramAnnotation)
+    {
+      // todo handle param types here
+      $param = new ParameterGenerator();
+      $param->setName($paramAnnotation);
+      $param->setType('string');
+      $params[] = $param;
+    }
+
+    return $params;
+  }
+
+  /**
+   * Get the method URI
+   *
+   * @param Collection      $collection
+   * @param CollectionRoute $route
+   *
+   * @return string
+   */
+  private function getMethodURI(Collection $collection, CollectionRoute $route)
+  {
+    return $this->getActionAnnotation(
+      $collection,
+      $route,
+      self::DOC_ACTION_METHOD_URI
+    );
   }
 
   /**
@@ -274,12 +317,14 @@ class Generator
     $docBlock->setShortDescription($description);
 
     // Method (Class) params
-    $methodParams = $this->getActionMethodParams($collection, $route);
-    if($methodParams)
+    if(!$this->isStaticRoute($route))
     {
-      $docBlock->setTags($methodParams);
+      //$methodParams = $this->getActionMethodParams($collection, $route);
+      //if($methodParams)
+      {
+        //$docBlock->setTags($methodParams);
+      }
     }
-
     return $docBlock;
   }
 
@@ -291,7 +336,7 @@ class Generator
    *
    * @return DocBlockTag[]|bool
    */
-  private function getActionMethodParams(
+  /*private function getActionMethodParams(
     Collection $collection,
     CollectionRoute $route
   )
@@ -322,7 +367,7 @@ class Generator
     }
 
     return $tags;
-  }
+  }*/
 
   /**
    * Get an array of action annotations by type
@@ -434,6 +479,95 @@ class Generator
   private function getCollections()
   {
     return $this->sdk->app->getCollections();
+  }
+
+  /**
+   * Generate the SDK
+   */
+  public function generate()
+  {
+    $this->printMessage("Generating SDK");
+
+    $this->createDirectories();
+
+    $collections = $this->getCollections();
+
+    // Validate there is anything to do
+    if(count($collections) === 0)
+    {
+      $this->printMessage('No Collections to process');
+      exit;
+    }
+
+    // Generate SDK classes
+    foreach($collections as $collection)
+    {
+      $controllerClass = $collection->controller;
+
+      // If there are no routes to process
+      if(count($collection->routes) === 0)
+      {
+        $this->printMessage(
+          sprintf("No actions to process for %s", $controllerClass)
+        );
+
+        continue;
+      }
+
+      // Generate requests
+      foreach($collection->routes as $route)
+      {
+        $this->generateRequestClass($collection, $route);
+      }
+    }
+  }
+
+  /**
+   * Generate a class for the controller action
+   *
+   * @param Collection      $collection
+   * @param CollectionRoute $route
+   *
+   * @return $this
+   */
+  private function generateRequestClass(
+    Collection $collection,
+    CollectionRoute $route
+  )
+  {
+    $className = $this->getRequestClassName($collection, $route);
+    $this->printMessage(sprintf('Generating Request: %s', $className));
+
+    // Get the class docblock
+    $docBlock = $this->getRequestClassDocBlock($collection, $route);
+
+    // Generate the class
+    $class = new ClassGenerator();
+    $class
+      //->setNamespaceName($this->getFinalNamespace())
+      ->setName($className)
+      ->addUse(get_class($this->sdk))
+      ->setExtendedClass($this->getActionExtendedClassName($route))
+      ->setDocblock($docBlock);
+
+    // Generate static method
+    if($this->isStaticRoute($route))
+    {
+      // Add use statement for method
+      $class->addUse('PhrestSDK\Request\RequestOptions');
+
+      // Add static method
+      $method = $this->getStaticMethodCall($collection, $route);
+      if($method)
+      {
+        $class->addMethodFromGenerator($method);
+      }
+    }
+
+    // Save class
+    $this->saveClass($class);
+
+    return $this;
   }
 }
 
