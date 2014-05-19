@@ -44,20 +44,29 @@ class PhrestSDK
   {
     $di = PhalconDI::getDefault();
 
-    if(
-    $sdk = $di->get('sdk')
-    )
+    if(!$di)
     {
-      return $sdk;
+      throw new \Exception('No DI found');
     }
 
-    throw new \Exception('No instance of the SDK available');
+    // Get already created instance
+    try
+    {
+      $sdk = $di->get('sdk');
+
+      return $sdk;
+    }
+    catch(\Exception $e)
+    {
+      throw new \Exception("No instance of 'sdk' found in DI");
+    }
   }
 
   /**
    * Set the API instance
    *
    * @param PhrestAPI $app
+   *
    * @return $this
    */
   public function setApp(PhrestAPI $app)
@@ -72,6 +81,7 @@ class PhrestSDK
    * Set the URL of the API
    *
    * @param $url
+   *
    * @return $this
    */
   public function setURL($url)
@@ -91,9 +101,10 @@ class PhrestSDK
    * It seems hacky, but I am not sure if there is any better way, please
    * submit a pull request if you can improve! :)
    *
-   * @param $method
-   * @param $path
+   * @param       $method
+   * @param       $path
    * @param array $params
+   *
    * @return mixed
    */
   private function getRawResponse($method, $path, $params = [])
@@ -141,14 +152,15 @@ class PhrestSDK
   /**
    * Handle getting a response
    *
-   * @param $method
-   * @param $path
+   * @param       $method
+   * @param       $path
    * @param array $params
+   *
    * @return mixed|string
    * @throws \Exception
    * @throws \Phalcon\Exception
    */
-  private static function getResponse($method, $path, $params = [])
+  public static function getResponse($method, $path, $params = [])
   {
     $instance = static::getInstance();
 
@@ -173,7 +185,9 @@ class PhrestSDK
 
   /**
    * Makes a GET call based on path/url
+   *
    * @param $path
+   *
    * @return Response
    */
   public static function get($path)
@@ -183,8 +197,10 @@ class PhrestSDK
 
   /**
    * Makes a POST call based on path/url
-   * @param $path
+   *
+   * @param       $path
    * @param array $params
+   *
    * @return Response
    */
   public static function post($path, $params = [])
@@ -194,8 +210,10 @@ class PhrestSDK
 
   /**
    * Makes a PUT call based on path/url
-   * @param $path
+   *
+   * @param       $path
    * @param array $params
+   *
    * @throws \Phalcon\Exception
    * @return Response
    */
@@ -206,8 +224,10 @@ class PhrestSDK
 
   /**
    * Makes a PATCH call based on path/url
-   * @param $path
+   *
+   * @param       $path
    * @param array $params
+   *
    * @throws \Phalcon\Exception
    * @return Response
    */
@@ -220,6 +240,7 @@ class PhrestSDK
    * Makes a DELETE call based on path/url
    *
    * @param $path
+   *
    * @return Response
    */
   public static function delete($path)
@@ -230,9 +251,11 @@ class PhrestSDK
   /**
    * Makes a cURL HTTP request to the API and returns the response
    * todo this needs to also handle PUT, POST, DELETE
+   *
    * @param string $method
-   * @param $path
-   * @param array $params
+   * @param        $path
+   * @param array  $params
+   *
    * @throws \Exception
    * @return string
    */

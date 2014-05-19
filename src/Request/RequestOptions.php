@@ -10,4 +10,8 @@ namespace PhrestSDK\Request;
 class RequestOptions
 {
 
+  public function toArray()
+  {
+    return ['dfgdfgdfgdf', 'dsddd'];
+  }
 }

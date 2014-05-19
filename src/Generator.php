@@ -36,11 +36,19 @@ class Generator
   private $outputDir;
   private $indentation;
 
+  /**
+   * Base namespace
+   *
+   * @var string
+   */
+  private $namespace;
+
   private $staticMethodRequests = [Request::METHOD_GET, Request::METHOD_DELETE];
 
-  public function __construct(PhrestSDK $sdk)
+  public function __construct(PhrestSDK $sdk, $namespace = 'SDK')
   {
     $this->sdk = $sdk;
+    $this->namespace = $namespace;
 
     $this
       ->setDefaultOutputDir()
@@ -166,7 +174,7 @@ class Generator
 
     // Generate body
     $body = sprintf(
-      'return self::%s("%s%s", $options);',
+      'return parent::%s("%s%s", $options);',
       strtolower($route->type),
       $collection->prefix,
       $this->getMethodURI($collection, $route)
@@ -245,13 +253,13 @@ class Generator
     switch($route->type)
     {
       case Request::METHOD_GET:
-        return GETRequest::class;
+        return '\\' . GETRequest::class;
       case Request::METHOD_POST:
-        return POSTRequest::class;
+        return '\\' . POSTRequest::class;
       case Request::METHOD_PATCH:
-        return PATCHRequest::class;
+        return '\\' . PATCHRequest::class;
       case Request::METHOD_DELETE:
-        return DELETERequest::class;
+        return '\\' . DELETERequest::class;
     }
 
     throw new \Exception(
@@ -523,6 +531,18 @@ class Generator
   }
 
   /**
+   * Request Class Namespace
+   *
+   * @param Collection $collection
+   *
+   * @return string
+   */
+  private function getRequestClassNamespace(Collection $collection)
+  {
+    return sprintf('%s\Request', $this->namespace);
+  }
+
+  /**
    * Generate a class for the controller action
    *
    * @param Collection      $collection
@@ -544,7 +564,7 @@ class Generator
     // Generate the class
     $class = new ClassGenerator();
     $class
-      //->setNamespaceName($this->getFinalNamespace())
+      ->setNamespaceName($this->getRequestClassNamespace($collection))
       ->setName($className)
       ->addUse(get_class($this->sdk))
       ->setExtendedClass($this->getActionExtendedClassName($route))
@@ -554,7 +574,7 @@ class Generator
     if($this->isStaticRoute($route))
     {
       // Add use statement for method
-      $class->addUse('PhrestSDK\Request\RequestOptions');
+      $class->addUse('\PhrestSDK\Request\RequestOptions');
 
       // Add static method
       $method = $this->getStaticMethodCall($collection, $route);
