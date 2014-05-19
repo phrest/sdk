@@ -105,7 +105,7 @@ class PhrestSDK
    * @param       $path
    * @param array $params
    *
-   * @return mixed
+   * @return Response
    */
   private function getRawResponse($method, $path, $params = [])
   {
@@ -150,13 +150,11 @@ class PhrestSDK
   }
 
   /**
-   * Handle getting a response
-   *
    * @param       $method
    * @param       $path
    * @param array $params
    *
-   * @return mixed|string
+   * @return Response|string
    * @throws \Exception
    * @throws \Phalcon\Exception
    */

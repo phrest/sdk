@@ -15,6 +15,14 @@ abstract class Request
   const METHOD_PUT = 'PUT';
   const METHOD_DELETE = 'DELETE';
 
+  /**
+   * @param                $method
+   * @param                $path
+   * @param RequestOptions $options
+   *
+   * @return \PhrestAPI\Responses\Response|string
+   * @throws \Phalcon\Exception
+   */
   protected static function getResponse(
     $method,
     $path,
