@@ -8,6 +8,7 @@ use Phalcon\Exception;
 use PhrestAPI\Collections\Collection;
 use PhrestAPI\Collections\CollectionRoute;
 use PhrestAPI\Request\PhrestRequest;
+use PhrestAPI\Responses\Response;
 use PhrestSDK\Request\RequestOptions;
 use Zend\Code\Generator\ClassGenerator;
 use Zend\Code\Generator\DocBlock\Tag;
@@ -24,16 +25,17 @@ use PhrestSDK\Request\PATCHRequest;
 use PhrestSDK\Request\Request;
 use Zend\Code\Generator\PropertyGenerator;
 use Zend\Code\Generator\PropertyValueGenerator;
+use Zend\Code\Reflection\DocBlock\Tag\GenericTag;
 
 class Generator
 {
   const CLASS_TYPE_REQUEST = 'Request';
 
-  // Action description
   const DOC_ACTION_DESCRIPTION = 'description';
   const DOC_ACTION_METHOD_PARAM = 'methodParam';
   const DOC_ACTION_POST_PARAM = 'postParam';
-  const DOC_ACTION_METHOD_URI = 'methodURI';
+  const DOC_ACTION_URI = 'uri';
+  const DOC_ACTION_RESPONSE = 'response';
 
   private $sdk;
   private $outputDir;
@@ -180,6 +182,17 @@ class Generator
     $optionsParam->setType('RequestOptions');
     $method->setParameter($optionsParam);
 
+    // Docblock
+    $docblock = new DocBlockGenerator();
+    $tag = new DocBlockTag();
+    $tag->setIndentation($this->indentation);
+    $tag->setName('return');
+    $tag->setContent($this->getActionResponse($collection, $route));
+    //$tag = new GenericTag();
+    //$tag->setN
+    $docblock->setTag($tag);
+    $method->setDocBlock($docblock);
+
     // Generate body
     $body = sprintf(
       'return parent::%s("%s%s", $options);',
@@ -317,7 +330,7 @@ class Generator
     $methodURI = $this->getActionAnnotation(
       $collection,
       $route,
-      self::DOC_ACTION_METHOD_URI
+      self::DOC_ACTION_URI
     );
 
     if(!$methodURI)
@@ -327,6 +340,29 @@ class Generator
     }
 
     return $methodURI;
+  }
+
+  /**
+   * @param Collection      $collection
+   * @param CollectionRoute $route
+   *
+   * @return bool|string
+   */
+  private function getActionResponse(Collection $collection, CollectionRoute $route)
+  {
+    $response = $this->getActionAnnotation(
+      $collection,
+      $route,
+      self::DOC_ACTION_RESPONSE
+    );
+
+    if(!$response)
+    {
+      // Default value
+      return '\\' . Response::class;
+    }
+
+    return $response;
   }
 
   /**
