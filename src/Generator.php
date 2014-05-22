@@ -286,7 +286,7 @@ class Generator
    * @param Collection      $collection
    * @param CollectionRoute $route
    *
-   * @return array
+   * @return PropertyGenerator[]
    */
   private function getActionPostParamProperties(
     Collection $collection,
@@ -348,7 +348,10 @@ class Generator
    *
    * @return bool|string
    */
-  private function getActionResponse(Collection $collection, CollectionRoute $route)
+  private function getActionResponse(
+    Collection $collection,
+    CollectionRoute $route
+  )
   {
     $response = $this->getActionAnnotation(
       $collection,
@@ -544,9 +547,16 @@ class Generator
 
     try
     {
-      return $methodParams[$route->controllerAction]
-        ->get($annotationType)
-        ->getArguments();
+      $annotations = [];
+      $actionAnnotations = $methodParams[$route->controllerAction]->getAll(
+        $annotationType
+      );
+
+      foreach($actionAnnotations as $annotation)
+      {
+        $annotations[] = $annotation->getArgument(0);
+      }
+      return $annotations;
     }
     catch(\Exception $e)
     {
