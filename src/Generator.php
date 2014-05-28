@@ -727,7 +727,7 @@ class Generator
 
     // Set body
     $body = sprintf(
-      '$this->path = "%s";',
+      '$this->path = "%s".$collection->prefix;',
       $this->getMethodURI($collection, $route)
     );
     $method->setBody($body);
