@@ -31,6 +31,9 @@ class Generator
 {
   const CLASS_TYPE_REQUEST = 'Requests';
 
+  const DOC_COLLECTION_NAME = 'name';
+  const DOC_COLLECTION_DESCRIPTION = 'description';
+
   const DOC_ACTION_DESCRIPTION = 'description';
   const DOC_ACTION_METHOD_PARAM = 'methodParam';
   const DOC_ACTION_POST_PARAM = 'postParam';
@@ -98,7 +101,7 @@ class Generator
    */
   public function setOutputDir($outputDir)
   {
-    $this->outputDir = $outputDir;
+    $this->outputDir = rtrim($outputDir, '/');
 
     return $this;
   }
@@ -111,31 +114,10 @@ class Generator
   private function printMessage($message)
   {
     printf('%s%s', PHP_EOL, $message);
-  }
-
-  /**
-   * Create the required directories
-   *
-   * @return $this
-   */
-  private function createDirectories()
-  {
-    $this->printMessage("Creating directories");
-
-    $directories = [
-      $this->outputDir,
-      sprintf('%s/%s', $this->outputDir, self::CLASS_TYPE_REQUEST),
-    ];
-    foreach($directories as $directory)
-    {
-      if(!file_exists($directory))
-      {
-        mkdir($directory, 0777, true);
-      }
-    }
 
     return $this;
   }
+
 
   /**
    * Static routes, such as GET or DELETE request
@@ -399,17 +381,36 @@ class Generator
    * Save a class to file
    *
    * @param ClassGenerator $class
-   * @param string         $type
+   *
+   * @param string         $collectionName
    *
    * @return int
    */
   private function saveClass(
     ClassGenerator $class,
-    $type = self::CLASS_TYPE_REQUEST
+    $collectionName
   )
   {
     $className = $class->getName();
-    $fileName = sprintf('%s/%s/%s.php', $this->outputDir, $type, $className);
+
+    $directory = sprintf(
+      '%s/%s/%s/',
+      $this->outputDir,
+      self::CLASS_TYPE_REQUEST,
+      $collectionName
+    );
+
+    // Create directory
+    if(!file_exists($directory))
+    {
+      mkdir($directory, 777, true);
+    }
+
+    $fileName = sprintf(
+      '%s/%s.php',
+      $directory,
+      $className
+    );
 
     return file_put_contents(
       $fileName,
@@ -437,6 +438,52 @@ class Generator
     $content = str_replace(sprintf(" = '%s'", $this->runId), '', $content);
 
     return $content;
+  }
+
+  private function getCollectionAnnotation(
+    Collection $collection,
+    $annotationType
+  )
+  {
+    $classReader = $this->getClassAnnotationReader($collection->controller);
+    $annotations = $classReader->getClassAnnotations();
+
+    try
+    {
+      return $annotations->get($annotationType)->getArgument(0);
+    }
+    catch(Exception $e)
+    {
+      return false;
+    }
+  }
+
+  /**
+   * Get the Collection Name
+   *
+   * @param Collection $collection
+   *
+   * @throws \Exception
+   */
+  private function getCollectionName(Collection $collection)
+  {
+    $collectionName = $this->getCollectionAnnotation(
+      $collection,
+      self::DOC_COLLECTION_NAME
+    );
+
+    if(!$collectionName)
+    {
+      throw new \Exception(
+        sprintf(
+          'Annotation %s not set on %s',
+          self::DOC_COLLECTION_NAME,
+          $collection->controller
+        )
+      );
+    }
+
+    return $collectionName;
   }
 
   /**
@@ -648,8 +695,6 @@ class Generator
   {
     $this->printMessage("Generating SDK");
 
-    $this->createDirectories();
-
     $collections = $this->getCollections();
 
     // Validate there is anything to do
@@ -794,7 +839,7 @@ class Generator
     }
 
     // Save class
-    $this->saveClass($class);
+    $this->saveClass($class, $this->getCollectionName($collection));
 
     return $this;
   }
