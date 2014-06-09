@@ -691,7 +691,7 @@ class Generator
    */
   private function getRequestClassNamespace(Collection $collection)
   {
-    return sprintf('%s\Request', $this->namespace);
+    return sprintf('%s\Requests', $this->namespace);
   }
 
   /**
