@@ -29,7 +29,7 @@ use Zend\Code\Reflection\DocBlock\Tag\GenericTag;
 
 class Generator
 {
-  const CLASS_TYPE_REQUEST = 'Request';
+  const CLASS_TYPE_REQUEST = 'Requests';
 
   const DOC_ACTION_DESCRIPTION = 'description';
   const DOC_ACTION_METHOD_PARAM = 'methodParam';
