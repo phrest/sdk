@@ -667,12 +667,9 @@ class Generator
     // Get the controller class name
     $controller = new $collection->controller;
     $controllerReflection = new \ReflectionClass($controller);
-    $controllerClassName = $controllerReflection->getShortName();
-    $controllerClassName = str_replace('Controller', '', $controllerClassName);
 
     return sprintf(
-      '%s%sRequest',
-      $controllerClassName,
+      '%sRequest',
       ucfirst($route->controllerAction)
     );
   }
