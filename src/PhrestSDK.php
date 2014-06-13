@@ -119,7 +119,7 @@ class PhrestSDK
     {
       foreach($params as $key => $val)
       {
-        $_POST[$key] = $val;
+        $_REQUEST[$key] = $val;
       }
     }
 
