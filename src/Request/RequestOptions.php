@@ -102,6 +102,16 @@ class RequestOptions
     return $this;
   }
 
+  public function addPostParams($params = [])
+  {
+    foreach($params as $k => $v)
+    {
+      $this->addPostParam($k, $v);
+    }
+
+    return $this;
+  }
+
 
   /**
    * Set a search term for the request
