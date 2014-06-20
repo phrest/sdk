@@ -896,6 +896,8 @@ class Generator
 
     // Set body
     $body = sprintf(
+      '// todo this is here for ease of use for now, in future it will not use' . PHP_EOL .
+      '// the parent method, it will simply handle everything here' . PHP_EOL .
       '$options = new RequestOptions();' . PHP_EOL .
       '$options->addPostParams(call_user_func("get_object_vars", $this));' . PHP_EOL .
       'return parent::%s("%s%s", $options);',
