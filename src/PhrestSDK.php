@@ -12,6 +12,7 @@ use PhrestAPI\Request\PhrestRequest;
 use PhrestAPI\Responses\Response;
 use PhrestAPI\PhrestAPI;
 use Phalcon\DI as PhalconDI;
+use PhrestSDK\Request\RequestOptions;
 use Site\Common\DI\SiteDI;
 use Zend\Stdlib\Request;
 
@@ -101,13 +102,13 @@ class PhrestSDK
    * It seems hacky, but I am not sure if there is any better way, please
    * submit a pull request if you can improve! :)
    *
-   * @param       $method
-   * @param       $path
-   * @param array $params
+   * @param                        $method
+   * @param                        $path
+   * @param RequestOptions $options
    *
    * @return Response
    */
-  private function getRawResponse($method, $path, $params = [])
+  private function getRawResponse($method, $path, RequestOptions $options = null)
   {
     // Backup super globals
     $request = $_REQUEST;
@@ -115,17 +116,12 @@ class PhrestSDK
     $get = $_GET;
 
     // Override the request params
-    if(isset($params) && count($params) > 0)
-    {
-      foreach($params as $key => $val)
-      {
-        $_REQUEST[$key] = $val;
-      }
-    }
+    $_GET = $options ? $options->getGetParams() : [];
+    $_POST = $options ? $options->getPostParams() : [];
 
     // Set HTTP method in GET
-    $_GET['method'] = $method;
-    $_REQUEST['type'] = 'raw';
+    $_GET['method'] = $method; // todo is this required?
+    $_REQUEST['type'] = 'raw'; // todo is this requred?
 
     // Get current DI
     $di = DI::getDefault();
@@ -150,28 +146,27 @@ class PhrestSDK
   }
 
   /**
-   * @param       $method
-   * @param       $path
-   * @param array $params
+   * @param                $method
+   * @param                $path
+   * @param RequestOptions $options
    *
    * @return Response|string
-   * @throws \Exception
    * @throws \Phalcon\Exception
    */
-  public static function getResponse($method, $path, $params = [])
+  public static function getResponse($method, $path, RequestOptions $options = null)
   {
     $instance = static::getInstance();
 
     // Get from the internal call if available
     if(isset($instance->app))
     {
-      return $instance->getRawResponse($method, $path, $params);
+      return $instance->getRawResponse($method, $path, $options);
     }
 
     // Get via HTTP (cURL) if available
     if(isset($instance->url))
     {
-      return $instance->getHTTPResponse($method, $path, $params);
+      return $instance->getHTTPResponse($method, $path, $options);
     }
 
     // todo better exception message with link
@@ -188,9 +183,9 @@ class PhrestSDK
    *
    * @return Response
    */
-  public static function get($path)
+  public static function get($path, RequestOptions $options = null)
   {
-    return self::getResponse(PhrestRequest::METHOD_GET, $path);
+    return self::getResponse(PhrestRequest::METHOD_GET, $path, $options);
   }
 
   /**
@@ -250,17 +245,18 @@ class PhrestSDK
    * Makes a cURL HTTP request to the API and returns the response
    * todo this needs to also handle PUT, POST, DELETE
    *
-   * @param string $method
-   * @param        $path
-   * @param array  $params
+   * @param string                 $method
+   * @param                        $path
+   * @param RequestOptions $options
    *
    * @throws \Exception
+   *
    * @return string
    */
   private function getHTTPResponse(
     $method = PhrestRequest::METHOD_GET,
     $path,
-    $params = []
+    RequestOptions $options = null
   )
   {
     // Prepare curl

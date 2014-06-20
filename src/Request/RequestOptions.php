@@ -13,16 +13,21 @@ class RequestOptions
 {
 
   private $searchTerm;
+  // todo phase out
   private $parameters;
 
+  private $postParams = [];
+  private $getParams = [];
+
   /**
-   * Add a parameter to the request used for filtering queries etc.
+   * Use addGetParam/addPostParam accordingly
    *
    * @param      $param
    * @param bool $value
    *
    * @return $this
    * @throws \Exception
+   * @deprecated
    */
   public function addParameter($param, $value = true)
   {
@@ -36,14 +41,63 @@ class RequestOptions
       $this->parameters = [];
     }
 
-    // Filter strings
+    return $this->addGetParam($param, $value);
+  }
+
+  /**
+   * Add a GET parameter
+   *
+   * @param      $param
+   * @param bool $value
+   *
+   * @return $this
+   * @throws \Exception
+   */
+  public function addGetParam($param, $value = true)
+  {
+    // Validate
+    if(!is_scalar($param))
+    {
+      throw new \Exception("Param name must be scalar");
+    }
+
+    // Filter
     if(is_string($value))
     {
       $value = trim($value);
     }
 
+    // Set
+    $this->getParams[trim($param)] = $value;
 
-    $this->parameters[trim($param)] = $value;
+    return $this;
+  }
+
+  /**
+   * Add a POST parameter
+   *
+   * @param      $param
+   * @param bool $value
+   *
+   * @return $this
+   * @throws \Exception
+   */
+  public function addPostParam($param, $value = true)
+  {
+    // Validate
+    if(!is_scalar($param))
+    {
+      throw new \Exception("Param name must be scalar");
+    }
+
+    // Filter
+    if(is_string($value))
+    {
+      $value = trim($value);
+    }
+
+    // Set
+    $this->postParams[trim($param)] = $value;
 
     return $this;
   }
@@ -81,6 +135,38 @@ class RequestOptions
     return $this;
   }
 
+  /**
+   * Get the request GET params
+   *
+   * @return array
+   */
+  public function getGetParams()
+  {
+    if(isset($this->searchTerm))
+    {
+      $this->getParams['q'] = $this->searchTerm;
+    }
+
+    return $this->getParams;
+  }
+
+  /**
+   * Get the request POST params
+   *
+   * @return array
+   */
+  public function getPostParams()
+  {
+    return $this->postParams;
+  }
+
+  /**
+   * This should no longer be needed
+   * todo remove
+   *
+   * @return array
+   * @deprecated
+   */
   public function toArray()
   {
     $params = [];

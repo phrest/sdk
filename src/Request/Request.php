@@ -29,7 +29,6 @@ abstract class Request
     RequestOptions $options = null
   )
   {
-    $params = $options ? $options->toArray() : [];
-    return PhrestSDK::getResponse($method, $path, $params);
+    return PhrestSDK::getResponse($method, $path, $options);
   }
 }

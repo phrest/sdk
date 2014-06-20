@@ -5,11 +5,8 @@ namespace PhrestSDK\Request;
 
 class POSTRequest extends Request
 {
-  protected $path;
-  protected $options = null;
-
-  public function create()
+  public function create($path, RequestOptions $options)
   {
-    return parent::getResponse(self::METHOD_POST, $this->path, $this->options);
+    return parent::getResponse(self::METHOD_POST, $path, $options);
   }
 }
