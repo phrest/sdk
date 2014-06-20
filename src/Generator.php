@@ -812,12 +812,12 @@ class Generator
       ->setExtendedClass($this->getActionExtendedClassName($route))
       ->setDocblock($docBlock);
 
+    // Add use statement for method
+    $class->addUse('\PhrestSDK\Request\RequestOptions');
+
     // Generate single static method
     if($this->isStaticRoute($route))
     {
-      // Add use statement for method
-      $class->addUse('\PhrestSDK\Request\RequestOptions');
-
       // Add static method
       $method = $this->getStaticMethodCall($collection, $route);
       if($method)
@@ -838,12 +838,75 @@ class Generator
       $class->addMethodFromGenerator(
         $this->getRequestClassConstruct($collection, $route)
       );
+
+      // Add create/update method
+      $class->addMethodFromGenerator(
+        $this->getRequestClassActionMethod($collection, $route)
+      );
     }
 
     // Save class
     $this->saveClass($class, $this->getCollectionName($collection));
 
     return $this;
+  }
+
+  /**
+   * Build the create/update method for the request class
+   *
+   * @param Collection      $collection
+   * @param CollectionRoute $route
+   *
+   * @return MethodGenerator
+   * @throws \Exception
+   */
+  private function getRequestClassActionMethod(
+    Collection $collection,
+    CollectionRoute $route
+  )
+  {
+    if($this->isStaticRoute($route))
+    {
+      throw new \Exception('Constructor for a static call?');
+    }
+
+    // Build method
+    $method = new MethodGenerator();
+    $method->setIndentation($this->indentation);
+    switch($route->type)
+    {
+      case Request::METHOD_PATCH:
+        $methodName = 'update';
+        break;
+      case Request::METHOD_POST:
+        $methodName = 'create';
+        break;
+      default:
+        throw new \Exception("No method name configured for " . $route->type);
+    }
+    $method->setName($methodName);
+
+
+    // Add params
+    $methodParams = $this->getActionMethodParamGenerators($collection, $route);
+    if($methodParams)
+    {
+      $method->setParameters($methodParams);
+    }
+
+    // Set body
+    $body = sprintf(
+      '$options = new RequestOptions();' . PHP_EOL .
+      '$options->addPostParams(call_user_func("get_object_vars", $this));' . PHP_EOL .
+      'return parent::%s("%s%s", $options);',
+
+      $methodName,
+      $collection->prefix,
+      $this->getMethodURI($collection, $route)
+    );
+    $method->setBody($body);
+
+    return $method;
   }
 }
 
