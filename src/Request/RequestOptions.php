@@ -28,7 +28,7 @@ class RequestOptions
   {
     if(!is_scalar($param))
     {
-      throw new \Exception("Search filter must be scalar");
+      throw new \Exception("Parameter filter must be scalar");
     }
 
     if(!isset($this->parameters))
