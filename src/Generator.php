@@ -886,6 +886,14 @@ class Generator
     }
     $method->setName($methodName);
 
+    // Docblock
+    $docblock = new DocBlockGenerator();
+    $tag = new DocBlockTag();
+    $tag->setIndentation($this->indentation);
+    $tag->setName('return');
+    $tag->setContent($this->getActionResponse($collection, $route));
+    $docblock->setTag($tag);
+    $method->setDocBlock($docblock);
 
     // Add params
     $methodParams = $this->getActionMethodParamGenerators($collection, $route);
