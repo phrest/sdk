@@ -3,6 +3,8 @@
 
 namespace PhrestSDK\Request;
 
+use PhrestAPI\Enums\AbstractEnum;
+
 /**
  * RequestOptions will handle any additional options that are sent through
  * i.e. expand, fields etc.
@@ -45,10 +47,24 @@ class RequestOptions
   }
 
   /**
+   * Set the query type
+   *
+   * @param AbstractEnum $queryEnum
+   *
+   * @return $this
+   */
+  public function setQuery(AbstractEnum $queryEnum)
+  {
+    $this->addGetParam('get', $queryEnum->getValue());
+
+    return $this;
+  }
+
+  /**
    * Add a GET parameter
    *
-   * @param      $param
-   * @param bool $value
+   * @param       $param
+   * @param mixed $value
    *
    * @return $this
    * @throws \Exception
