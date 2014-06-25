@@ -5,10 +5,9 @@ namespace PhrestSDK\Request;
 
 class PATCHRequest extends Request
 {
- // protected $path;
- // protected $options = null;
+  protected $path;
 
-  public function update($path, $options) //dirty hack to make patch work //todo fix this
+  public function updateByPath($path, RequestOptions $options)
   {
     return parent::getResponse(self::METHOD_PATCH, $path, $options);
   }

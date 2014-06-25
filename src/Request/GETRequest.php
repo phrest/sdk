@@ -16,7 +16,7 @@ class GETRequest extends Request
    *
    * @return string
    */
-  public static function get($path, RequestOptions $options = null)
+  public static function getByPath($path, RequestOptions $options = null)
   {
     return parent::getResponse(self::METHOD_GET, $path, $options);
   }

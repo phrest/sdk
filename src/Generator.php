@@ -177,7 +177,7 @@ class Generator
 
     // Generate body
     $body = sprintf(
-      'return parent::%s("%s%s", $options);',
+      'return parent::%sByPath("%s%s", $options);',
       strtolower($route->type),
       $collection->prefix,
       $this->getMethodURI($collection, $route)
@@ -908,7 +908,7 @@ class Generator
       '// the parent method, it will simply handle everything here' . PHP_EOL .
       '$options = new RequestOptions();' . PHP_EOL .
       '$options->addPostParams(call_user_func("get_object_vars", $this));' . PHP_EOL .
-      'return parent::%s("%s%s", $options);',
+      'return parent::%sByPath($this->path, $options);',
 
       $methodName,
       $collection->prefix,

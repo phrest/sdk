@@ -5,8 +5,8 @@ namespace PhrestSDK\Request;
 
 class DELETERequest extends Request
 {
-  public static function delete()
+  public static function deleteByPath($path, RequestOptions $options)
   {
-    // todo
+    return parent::getResponse(self::METHOD_DELETE, $path, $options);
   }
 }
