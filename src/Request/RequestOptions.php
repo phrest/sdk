@@ -363,4 +363,26 @@ class RequestOptions
   {
     return $this->getQueryParam('offset');
   }
+
+  /**
+   * Add multiple query params
+   *
+   * @param array $params
+   *
+   * @return $this
+   */
+  public function addQueryParams($params = [])
+  {
+    if(empty($params))
+    {
+      return $this;
+    }
+
+    foreach($params as $key => $value)
+    {
+      $this->addQueryParam($key, $value);
+    }
+
+    return $this;
+  }
 }
