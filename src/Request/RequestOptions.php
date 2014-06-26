@@ -128,7 +128,6 @@ class RequestOptions
     return $this;
   }
 
-
   /**
    * Set a search term for the request
    *
@@ -339,5 +338,29 @@ class RequestOptions
   public function getIds()
   {
     return $this->getQueryParam('ids');
+  }
+
+  /**
+   * Set offset option
+   *
+   * @param $offset
+   *
+   * @return $this
+   */
+  public function setOffset($offset)
+  {
+    $this->setQuery('offset', (int)$offset);
+
+    return $this;
+  }
+
+  /**
+   * Get offset option
+   *
+   * @return null|string
+   */
+  public function getOffset()
+  {
+    return $this->getQueryParam('offset');
   }
 }
