@@ -316,4 +316,28 @@ class RequestOptions
   {
     return $this->getQueryParam('sortBy');
   }
+
+  /**
+   * Set IDs for filter
+   *
+   * @param array $ids
+   *
+   * @return $this
+   */
+  public function setIds($ids = [])
+  {
+    $this->setQuery('ids', $ids);
+
+    return $this;
+  }
+
+  /**
+   * Get ids for filter
+   *
+   * @return null|string
+   */
+  public function getIds()
+  {
+    return $this->getQueryParam('ids');
+  }
 }
