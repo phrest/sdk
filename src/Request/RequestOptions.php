@@ -19,7 +19,7 @@ class RequestOptions
   private $parameters;
 
   private $postParams = [];
-  private $getParams = [];
+  private $queryParams = [];
 
   /**
    * Use addGetParam/addPostParam accordingly
@@ -84,7 +84,7 @@ class RequestOptions
     }
 
     // Set
-    $this->getParams[trim($param)] = $value;
+    $this->queryParams[trim($param)] = $value;
 
     return $this;
   }
@@ -170,10 +170,10 @@ class RequestOptions
   {
     if(isset($this->searchTerm))
     {
-      $this->getParams['q'] = $this->searchTerm;
+      $this->queryParams['q'] = $this->searchTerm;
     }
 
-    return $this->getParams;
+    return $this->queryParams;
   }
 
   /**
@@ -211,5 +211,109 @@ class RequestOptions
     }
 
     return $params;
+  }
+
+  /**
+   * Add a GET param
+   *
+   * @param $key
+   * @param $value
+   *
+   * @return $this
+   */
+  public function addQueryParam($key, $value)
+  {
+    $this->queryParams[$key] = $value;
+
+    return $this;
+  }
+
+  /**
+   * Set limit
+   *
+   * @param $limit
+   *
+   * @return $this
+   */
+  public function setLimit($limit)
+  {
+    $this->addQueryParam('limit', (int)$limit);
+
+    return $this;
+  }
+
+  /**
+   * Get query param by key
+   *
+   * @param $key
+   *
+   * @return null|string
+   */
+  public function getQueryParam($key)
+  {
+    if(isset($this->queryParams[$key]))
+    {
+      return $this->queryParams[$key];
+    }
+
+    return null;
+  }
+
+  /**
+   * Get limit option
+   *
+   * @return null|string
+   */
+  public function getLimit()
+  {
+    return $this->getQueryParam('limit');
+  }
+
+  /**
+   * Set sort order option
+   *
+   * @param string $order
+   *
+   * @return $this
+   */
+  public function setSortOrder($order = 'ASC')
+  {
+    $this->addQueryParam('sortOrder', $order);
+
+    return $this;
+  }
+
+  /**
+   * Get sort order option (ASC, DESC, null)
+   *
+   * @return null|string
+   */
+  public function getSortOrder()
+  {
+    return $this->getQueryParam('sortOrder');
+  }
+
+  /**
+   * Set sort by option
+   *
+   * @param $sortBy
+   *
+   * @return $this
+   */
+  public function setSortBy($sortBy)
+  {
+    $this->addQueryParam('sortBy', $sortBy);
+
+    return $this;
+  }
+
+  /**
+   * Get Sort By option
+   *
+   * @return null|string
+   */
+  public function getSortBy()
+  {
+    return $this->getQueryParam('sortBy');
   }
 }
