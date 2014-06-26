@@ -325,7 +325,7 @@ class RequestOptions
    */
   public function setIds($ids = [])
   {
-    $this->setQuery('ids', $ids);
+    $this->addQueryParam('ids', $ids);
 
     return $this;
   }
@@ -349,7 +349,7 @@ class RequestOptions
    */
   public function setOffset($offset)
   {
-    $this->setQuery('offset', (int)$offset);
+    $this->addQueryParam('offset', (int)$offset);
 
     return $this;
   }
