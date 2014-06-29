@@ -8,6 +8,7 @@ use Phalcon\Events\Manager;
 use Phalcon\Exception;
 use Phalcon\Mvc\Dispatcher;
 use Phalcon\Registry;
+use PhrestAPI\DI\PhrestDI;
 use PhrestAPI\Request\PhrestRequest;
 use PhrestAPI\Responses\Response;
 use PhrestAPI\PhrestAPI;
@@ -23,6 +24,11 @@ use Zend\Stdlib\Request;
  */
 class PhrestSDK
 {
+  // todo this is a temporary solution to storing the URI while processing
+  // an internal request, if the request 404s we need a route
+  public static $uri;
+  public static $method;
+
   /** @var PhrestAPI */
   public $app;
 
@@ -102,13 +108,20 @@ class PhrestSDK
    * It seems hacky, but I am not sure if there is any better way, please
    * submit a pull request if you can improve! :)
    *
+   * todo test if the below does in fact require a new instance of DI
+   * if it is being called from within the API
+   *
    * @param                        $method
    * @param                        $path
-   * @param RequestOptions $options
+   * @param RequestOptions         $options
    *
    * @return Response
    */
-  private function getRawResponse($method, $path, RequestOptions $options = null)
+  private function getRawResponse(
+    $method,
+    $path,
+    RequestOptions $options = null
+  )
   {
     // Backup super globals
     $request = $_REQUEST;
@@ -120,22 +133,42 @@ class PhrestSDK
     $_POST = $options ? $options->getPostParams() : [];
 
     // Set HTTP method in GET
-    $_GET['method'] = $method; // todo is this required?
-    $_REQUEST['type'] = 'raw'; // todo is this requred?
+    $_GET['method'] = $method;
+    $_GET['_url'] = $path;
+    $_REQUEST = ['type' => 'raw']; // todo is this requred?
 
     // Get current DI
-    $di = DI::getDefault();
+    $defaultDI = DI::getDefault();
 
-    // Set API DI to the default, this is required for models etc.
-    // As Phalcon will get the default DI to perform actions
-    $apiDI = $di->get('sdk')->app->getDI();
-    $di->setDefault($apiDI);
+    if($defaultDI instanceof PhrestDI)
+    {
+      $apiDI = $defaultDI;
+    }
+    else
+    {
+      // Set API DI to the default, this is required for models etc.
+      // As Phalcon will get the default DI to perform actions
+      $apiDI = $defaultDI->get('sdk')->app->getDI();
+      DI::setDefault($apiDI);
+    }
+
+    // Cache the URI & method
+    self::$uri = $path;
+    self::$method = $method;
 
     // Get response from API
+    // todo post not picked up
     $response = $this->app->handle($path);
 
-    // Restore original DI
-    DI::setDefault($di);
+    // Remove cached uri & method
+    self::$uri = null;
+    self::$method = null;
+
+    // Restore default DI
+    if(!$defaultDI instanceof PhrestDI)
+    {
+      DI::setDefault($defaultDI);
+    }
 
     // Restore super globals
     $_REQUEST = $request;
@@ -153,7 +186,11 @@ class PhrestSDK
    * @return Response|string
    * @throws \Phalcon\Exception
    */
-  public static function getResponse($method, $path, RequestOptions $options = null)
+  public static function getResponse(
+    $method,
+    $path,
+    RequestOptions $options = null
+  )
   {
     $instance = static::getInstance();
 
@@ -247,7 +284,7 @@ class PhrestSDK
    *
    * @param string                 $method
    * @param                        $path
-   * @param RequestOptions $options
+   * @param RequestOptions         $options
    *
    * @throws \Exception
    *
