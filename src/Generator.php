@@ -22,6 +22,7 @@ use PhrestSDK\Request\GETRequest;
 use PhrestSDK\Request\POSTRequest;
 use PhrestSDK\Request\DELETERequest;
 use PhrestSDK\Request\PATCHRequest;
+use PhrestSDK\Request\PUTRequest;
 use PhrestSDK\Request\Request;
 use Zend\Code\Generator\PropertyGenerator;
 use Zend\Code\Generator\PropertyValueGenerator;
@@ -370,6 +371,8 @@ class Generator
         return '\\' . PATCHRequest::class;
       case Request::METHOD_DELETE:
         return '\\' . DELETERequest::class;
+      case Request::METHOD_PUT:
+        return '\\' . PUTRequest::class;
     }
 
     throw new \Exception(
@@ -880,6 +883,9 @@ class Generator
         break;
       case Request::METHOD_POST:
         $methodName = 'create';
+        break;
+      case Request::METHOD_PUT:
+        $methodName = 'set';
         break;
       default:
         throw new \Exception("No method name configured for " . $route->type);
