@@ -14,7 +14,7 @@ use PhrestAPI\Responses\Response;
 use PhrestAPI\PhrestAPI;
 use Phalcon\DI as PhalconDI;
 use PhrestSDK\Request\RequestOptions;
-use Site\Common\DI\SiteDI;
+use My\Common\DI\SiteDI;
 use Zend\Stdlib\Request;
 
 /**
@@ -49,6 +49,13 @@ class PhrestSDK
    */
   public static function getInstance()
   {
+    static $instance;
+
+    if(isset($instance))
+    {
+      return $instance;
+    }
+
     $di = PhalconDI::getDefault();
 
     if(!$di)
@@ -59,9 +66,9 @@ class PhrestSDK
     // Get already created instance
     try
     {
-      $sdk = $di->get('sdk');
+      $instance = $di->get('sdk');
 
-      return $sdk;
+      return $instance;
     }
     catch(\Exception $e)
     {
