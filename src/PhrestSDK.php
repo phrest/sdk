@@ -155,7 +155,7 @@ class PhrestSDK
     {
       // Set API DI to the default, this is required for models etc.
       // As Phalcon will get the default DI to perform actions
-      $apiDI = $defaultDI->get('sdk')->app->getDI();
+      $apiDI = self::getInstance()->app->getDI();
       DI::setDefault($apiDI);
     }
 
