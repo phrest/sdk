@@ -165,7 +165,15 @@ class PhrestSDK
 
     // Get response from API
     // todo post not picked up
-    $response = $this->app->handle($path);
+    try
+    {
+      $response = $this->app->handle($path);
+    }
+    catch(\Exception $e)
+    {
+      DI::setDefault($defaultDI);
+      throw $e;
+    }
 
     // Remove cached uri & method
     self::$uri = null;
