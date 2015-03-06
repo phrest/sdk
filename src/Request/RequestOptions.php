@@ -33,12 +33,12 @@ class RequestOptions
    */
   public function addParameter($param, $value = true)
   {
-    if(!is_scalar($param))
+    if (!is_scalar($param))
     {
       throw new \Exception("Parameter filter must be scalar");
     }
 
-    if(!isset($this->parameters))
+    if (!isset($this->parameters))
     {
       $this->parameters = [];
     }
@@ -72,13 +72,13 @@ class RequestOptions
   public function addGetParam($param, $value = true)
   {
     // Validate
-    if(!is_scalar($param))
+    if (!is_scalar($param))
     {
       throw new \Exception("Param name must be scalar");
     }
 
     // Filter
-    if(is_string($value))
+    if (is_string($value))
     {
       $value = trim($value);
     }
@@ -101,13 +101,13 @@ class RequestOptions
   public function addPostParam($param, $value = true)
   {
     // Validate
-    if(!is_scalar($param))
+    if (!is_scalar($param))
     {
       throw new \Exception("Param name must be scalar");
     }
 
     // Filter
-    if(is_string($value))
+    if (is_string($value))
     {
       $value = trim($value);
     }
@@ -120,7 +120,7 @@ class RequestOptions
 
   public function addPostParams($params = [])
   {
-    foreach($params as $k => $v)
+    foreach ($params as $k => $v)
     {
       $this->addPostParam($k, $v);
     }
@@ -138,7 +138,7 @@ class RequestOptions
    */
   public function setSearchTerm($searchTerm)
   {
-    if(!is_scalar($searchTerm))
+    if (!is_scalar($searchTerm))
     {
       throw new \Exception("Search term must be a string");
     }
@@ -167,7 +167,7 @@ class RequestOptions
    */
   public function getGetParams()
   {
-    if(isset($this->searchTerm))
+    if (isset($this->searchTerm))
     {
       $this->queryParams['q'] = $this->searchTerm;
     }
@@ -196,14 +196,14 @@ class RequestOptions
   {
     $params = [];
 
-    if(isset($this->searchTerm))
+    if (isset($this->searchTerm))
     {
       $params['q'] = $this->searchTerm;
     }
 
-    if(isset($this->parameters))
+    if (isset($this->parameters))
     {
-      foreach($this->parameters as $paramKey => $paramVal)
+      foreach ($this->parameters as $paramKey => $paramVal)
       {
         $params[$paramKey] = $paramVal;
       }
@@ -250,7 +250,7 @@ class RequestOptions
    */
   public function getQueryParam($key)
   {
-    if(isset($this->queryParams[$key]))
+    if (isset($this->queryParams[$key]))
     {
       return $this->queryParams[$key];
     }
@@ -364,6 +364,11 @@ class RequestOptions
     return $this->getQueryParam('offset');
   }
 
+  public function isHttp()
+  {
+    return $this->getQueryParam('http');
+  }
+
   /**
    * Add multiple query params
    *
@@ -373,12 +378,12 @@ class RequestOptions
    */
   public function addQueryParams($params = [])
   {
-    if(empty($params))
+    if (empty($params))
     {
       return $this;
     }
 
-    foreach($params as $key => $value)
+    foreach ($params as $key => $value)
     {
       $this->addQueryParam($key, $value);
     }

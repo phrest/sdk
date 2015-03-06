@@ -38,6 +38,7 @@ class Generator
   const DOC_ACTION_DESCRIPTION = 'description';
   const DOC_ACTION_METHOD_PARAM = 'methodParam';
   const DOC_ACTION_POST_PARAM = 'postParam';
+  const DOC_ACTION_ISHTTP_PARAM = 'isHttp';
   const DOC_ACTION_URI = 'uri';
   const DOC_ACTION_RESPONSE = 'response';
 
@@ -908,17 +909,33 @@ class Generator
       $method->setParameters($methodParams);
     }
 
+    $isHttp = $this->getActionAnnotation(
+      $collection,
+      $route,
+      self::DOC_ACTION_ISHTTP_PARAM
+    );
+
+    if ($isHttp)
+    {
+      $isHttpPhp = '$options->addQueryParam(\'http\', true);' . PHP_EOL;
+    }
+    else
+    {
+      $isHttpPhp = null;
+    }
+
     // Set body
     $body = sprintf(
       '// todo this is here for ease of use for now, in future it will not use' . PHP_EOL .
       '// the parent method, it will simply handle everything here' . PHP_EOL .
       '$options = new RequestOptions();' . PHP_EOL .
       '$options->addPostParams(call_user_func("get_object_vars", $this));' . PHP_EOL .
+      '%s' .
       'return parent::%sByPath($this->path, $options);',
-
-      $methodName,
-      $collection->prefix,
-      $this->getMethodURI($collection, $route)
+      $isHttpPhp,
+      $methodName
+//      $collection->prefix,
+//      $this->getMethodURI($collection, $route)
     );
     $method->setBody($body);
 

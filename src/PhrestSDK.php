@@ -3,6 +3,8 @@
 
 namespace PhrestSDK;
 
+use GuzzleHttp\Client;
+use GuzzleHttp\Post\PostBody;
 use Phalcon\DI;
 use Phalcon\Events\Manager;
 use Phalcon\Exception;
@@ -15,7 +17,7 @@ use PhrestAPI\PhrestAPI;
 use Phalcon\DI as PhalconDI;
 use PhrestSDK\Request\RequestOptions;
 use My\Common\DI\SiteDI;
-use Zend\Stdlib\Request;
+use GuzzleHttp\Message\Request;
 
 /**
  * SDK for Phalcon REST API
@@ -202,23 +204,25 @@ class PhrestSDK
    * @throws \Phalcon\Exception
    */
   public static function getResponse(
-    $method,
-    $path,
-    RequestOptions $options = null
-  )
-  {
+      $method,
+      $path,
+      RequestOptions $options = null
+  ) {
     $instance = static::getInstance();
 
-    // Get from the internal call if available
-    if(isset($instance->app))
+    if ($options)
     {
-      return $instance->getRawResponse($method, $path, $options);
+      // Get via HTTP
+      if (isset($instance->url) && $options->isHttp())
+      {
+        return $instance->getHTTPResponse($method, $path, $options);
+      }
     }
 
-    // Get via HTTP (cURL) if available
-    if(isset($instance->url))
+    // Get from the internal call if available
+    if (isset($instance->app))
     {
-      return $instance->getHTTPResponse($method, $path, $options);
+      return $instance->getRawResponse($method, $path, $options);
     }
 
     // todo better exception message with link
@@ -306,27 +310,43 @@ class PhrestSDK
    * @return string
    */
   private function getHTTPResponse(
-    $method = PhrestRequest::METHOD_GET,
-    $path,
-    RequestOptions $options = null
-  )
-  {
-    // Prepare curl
-    $curl = curl_init($this->url . $path);
-    curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-    $curlResponse = curl_exec($curl);
+      $method,
+      $path,
+      RequestOptions $options = null
+  ) {
+    $client = new Client();
 
-    // Handle failed request
-    if($curlResponse === false)
+    // Build body
+    $body = new PostBody();
+
+    if ($options)
     {
-      $info = curl_getinfo($curl);
-      curl_close($curl);
-
-      throw new \Exception('Transmission Error: ' . print_r($info, true));
+      foreach ($options->getPostParams() as $name => $value)
+      {
+        $body->setField($name, $value);
+      }
     }
 
-    // Return response
-    curl_close($curl);
-    return json_decode($curlResponse);
+    // Prepare the request
+    $request = new Request(
+      $method,
+      $this->url . $path,
+      [],
+      $body,
+      []
+    );
+
+    // Get response
+    $response = $client->send($request);
+    $body = json_decode($response->getBody());
+
+    if (isset($body->data))
+    {
+      return $body->data;
+    }
+    else
+    {
+      throw new \Exception('Error calling ' . $method . ' to: ' . $path);
+    }
   }
 }

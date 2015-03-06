@@ -19,6 +19,7 @@
   "require":     {
     "phrest/api": "dev-master",
     "digitronac/phalcon-ide-stubs": "1.3.0",
-    "zendframework/zend-code": "2.3.*@dev"
+    "zendframework/zend-code": "2.3.*@dev",
+    "guzzlehttp/guzzle": "4.1.8"
   }
 }
