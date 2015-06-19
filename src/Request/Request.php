@@ -1,9 +1,9 @@
 <?php
 
 
-namespace PhrestSDK\Request;
+namespace Phrest\SDK\Request;
 
-use PhrestSDK\PhrestSDK;
+use Phrest\SDK\PhrestSDK;
 
 abstract class Request
 {
@@ -20,7 +20,7 @@ abstract class Request
    * @param                $path
    * @param RequestOptions $options
    *
-   * @return \PhrestAPI\Responses\Response|string
+   * @return \Phrest\API\Responses\Response|string
    * @throws \Phalcon\Exception
    */
   protected static function getResponse(

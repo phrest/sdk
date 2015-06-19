@@ -1,7 +1,7 @@
 <?php
 
 
-namespace PhrestSDK\Request;
+namespace Phrest\SDK\Request;
 
 class DELETERequest extends Request
 {

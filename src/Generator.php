@@ -1,15 +1,15 @@
 <?php
 
 
-namespace PhrestSDK;
+namespace Phrest\SDK;
 
 use Phalcon\Annotations\Reader;
 use Phalcon\Exception;
-use PhrestAPI\Collections\Collection;
-use PhrestAPI\Collections\CollectionRoute;
-use PhrestAPI\Request\PhrestRequest;
-use PhrestAPI\Responses\Response;
-use PhrestSDK\Request\RequestOptions;
+use Phrest\API\Collections\Collection;
+use Phrest\API\Collections\CollectionRoute;
+use Phrest\API\Request\PhrestRequest;
+use Phrest\API\Responses\Response;
+use Phrest\SDK\Request\RequestOptions;
 use Zend\Code\Generator\ClassGenerator;
 use Zend\Code\Generator\DocBlock\Tag;
 use Zend\Code\Generator\DocBlockGenerator;
@@ -18,12 +18,12 @@ use Zend\Code\Generator\MethodGenerator;
 use Zend\Code\Generator\ParameterGenerator;
 use Phalcon\Annotations\Adapter\Memory as AnnotationReader;
 use Zend\Code\Generator\DocBlock\Tag\GenericTag as DocBlockTag;
-use PhrestSDK\Request\GETRequest;
-use PhrestSDK\Request\POSTRequest;
-use PhrestSDK\Request\DELETERequest;
-use PhrestSDK\Request\PATCHRequest;
-use PhrestSDK\Request\PUTRequest;
-use PhrestSDK\Request\Request;
+use Phrest\SDK\Request\GETRequest;
+use Phrest\SDK\Request\POSTRequest;
+use Phrest\SDK\Request\DELETERequest;
+use Phrest\SDK\Request\PATCHRequest;
+use Phrest\SDK\Request\PUTRequest;
+use Phrest\SDK\Request\Request;
 use Zend\Code\Generator\PropertyGenerator;
 use Zend\Code\Generator\PropertyValueGenerator;
 use Zend\Code\Reflection\DocBlock\Tag\GenericTag;
@@ -681,7 +681,7 @@ class Generator
   /**
    * Get the API Collections
    *
-   * @return \PhrestAPI\Collections\Collection[]
+   * @return \Phrest\API\Collections\Collection[]
    * @throws \Exception
    */
   private function getCollections()
@@ -817,7 +817,7 @@ class Generator
       ->setDocblock($docBlock);
 
     // Add use statement for method
-    $class->addUse('\PhrestSDK\Request\RequestOptions');
+    $class->addUse('\Phrest\SDK\Request\RequestOptions');
 
     // Generate single static method
     if($this->isStaticRoute($route))

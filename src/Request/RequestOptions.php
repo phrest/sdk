@@ -1,9 +1,9 @@
 <?php
 
 
-namespace PhrestSDK\Request;
+namespace Phrest\SDK\Request;
 
-use PhrestAPI\Enums\AbstractEnum;
+use Phrest\API\Enums\AbstractEnum;
 
 /**
  * RequestOptions will handle any additional options that are sent through

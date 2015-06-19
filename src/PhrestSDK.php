@@ -1,7 +1,7 @@
 <?php
 
 
-namespace PhrestSDK;
+namespace Phrest\SDK;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Post\PostBody;
@@ -10,13 +10,12 @@ use Phalcon\Events\Manager;
 use Phalcon\Exception;
 use Phalcon\Mvc\Dispatcher;
 use Phalcon\Registry;
-use PhrestAPI\DI\PhrestDI;
-use PhrestAPI\Request\PhrestRequest;
-use PhrestAPI\Responses\Response;
-use PhrestAPI\PhrestAPI;
+use Phrest\API\DI\PhrestDI;
+use Phrest\API\Request\PhrestRequest;
+use Phrest\API\Responses\Response;
+use Phrest\API\PhrestAPI;
 use Phalcon\DI as PhalconDI;
-use PhrestSDK\Request\RequestOptions;
-use My\Common\DI\SiteDI;
+use Phrest\SDK\Request\RequestOptions;
 use GuzzleHttp\Message\Request;
 
 /**
