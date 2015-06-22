@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Phrest\SDK\Request;
 
 use Phrest\API\Enums\AbstractEnum;
@@ -8,7 +7,6 @@ use Phrest\API\Enums\AbstractEnum;
 /**
  * RequestOptions will handle any additional options that are sent through
  * i.e. expand, fields etc.
- *
  * todo this could be automated into the request objects based on annotations
  */
 class RequestOptions

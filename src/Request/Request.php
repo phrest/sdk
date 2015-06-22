@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Phrest\SDK\Request;
 
 use Phrest\SDK\PhrestSDK;

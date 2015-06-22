@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Phrest\SDK;
 
 use GuzzleHttp\Client;
@@ -52,14 +51,14 @@ class PhrestSDK
   {
     static $instance;
 
-    if(isset($instance))
+    if (isset($instance))
     {
       return $instance;
     }
 
     $di = PhalconDI::getDefault();
 
-    if(!$di)
+    if (!$di)
     {
       throw new \Exception('No DI found');
     }
@@ -71,7 +70,7 @@ class PhrestSDK
 
       return $instance;
     }
-    catch(\Exception $e)
+    catch (\Exception $e)
     {
       throw new \Exception("No instance of 'sdk' found in DI");
     }
@@ -112,10 +111,8 @@ class PhrestSDK
    * real PUT, POST, PATCH, GET or DELETE request
    * It will override the Default DI (Which will be the current site)
    * and will restore everything after the request
-   *
    * It seems hacky, but I am not sure if there is any better way, please
    * submit a pull request if you can improve! :)
-   *
    * todo test if the below does in fact require a new instance of DI
    * if it is being called from within the API
    *
@@ -148,7 +145,7 @@ class PhrestSDK
     // Get current DI
     $defaultDI = DI::getDefault();
 
-    if($defaultDI instanceof PhrestDI)
+    if ($defaultDI instanceof PhrestDI)
     {
       $apiDI = $defaultDI;
     }
@@ -170,7 +167,7 @@ class PhrestSDK
     {
       $response = $this->app->handle($path);
     }
-    catch(\Exception $e)
+    catch (\Exception $e)
     {
       DI::setDefault($defaultDI);
       throw $e;
@@ -181,7 +178,7 @@ class PhrestSDK
     self::$method = null;
 
     // Restore default DI
-    if(!$defaultDI instanceof PhrestDI)
+    if (!$defaultDI instanceof PhrestDI)
     {
       DI::setDefault($defaultDI);
     }
@@ -203,10 +200,11 @@ class PhrestSDK
    * @throws \Phalcon\Exception
    */
   public static function getResponse(
-      $method,
-      $path,
-      RequestOptions $options = null
-  ) {
+    $method,
+    $path,
+    RequestOptions $options = null
+  )
+  {
     $instance = static::getInstance();
 
     if ($options)
@@ -305,14 +303,14 @@ class PhrestSDK
    * @param RequestOptions         $options
    *
    * @throws \Exception
-   *
    * @return string
    */
   private function getHTTPResponse(
-      $method,
-      $path,
-      RequestOptions $options = null
-  ) {
+    $method,
+    $path,
+    RequestOptions $options = null
+  )
+  {
     $client = new Client();
 
     // Build body
