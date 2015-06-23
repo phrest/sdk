@@ -2,6 +2,7 @@
 
 namespace Phrest\SDK\Generator\Model;
 
+use PhpParser\Parser;
 use Phrest\SDK\Generator;
 use Phrest\SDK\Generator\AbstractGenerator;
 use Phrest\SDK\Generator\Helper\ClassGen;
@@ -41,7 +42,10 @@ class ModelGenerator extends AbstractGenerator
     parent::__construct($version, $entityName);
   }
 
-  public function generate()
+  /**
+   * @return ClassGenerator
+   */
+  public function create()
   {
     $class = ClassGen::classGen(
       $this->name,
@@ -60,7 +64,18 @@ class ModelGenerator extends AbstractGenerator
       ClassGen::method('initialize')
     );
 
-    return '<?php' . PHP_EOL . PHP_EOL . $class->generate();
+    $findFirst = ClassGen::method(
+      'findFirst',
+      [new ParameterGenerator('params', 'mixed', [])]
+    )->setBody('return parent::findFirst($params);');
+    $findFirst->setStatic(true);
+    $findFirst->getDocBlock()->setTag(new Tag\GenericTag('return', 'static'));
+
+    $class->addMethodFromGenerator(
+      $findFirst
+    );
+
+    return $class;
   }
 
   /**

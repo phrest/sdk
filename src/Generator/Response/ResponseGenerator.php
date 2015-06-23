@@ -4,6 +4,7 @@ namespace Phrest\SDK\Generator\Response;
 
 use Phrest\SDK\Generator\AbstractGenerator;
 use Phrest\SDK\Generator\Helper\ClassGen;
+use Zend\Code\Generator\ClassGenerator;
 use Zend\Code\Generator\GeneratorInterface;
 use Zend\Code\Generator\ParameterGenerator;
 
@@ -45,9 +46,9 @@ class ResponseGenerator extends AbstractGenerator
   }
 
   /**
-   * @return string
+   * @return ClassGenerator
    */
-  public function generate()
+  public function create()
   {
     if ($this->type == self::SINGULAR)
     {
@@ -60,7 +61,7 @@ class ResponseGenerator extends AbstractGenerator
   }
 
   /**
-   * @return string
+   * @return ClassGenerator
    */
   public function generateSingular()
   {
@@ -87,11 +88,11 @@ class ResponseGenerator extends AbstractGenerator
 
     $class->addMethodFromGenerator($constructor);
 
-    return '<?php' . PHP_EOL . PHP_EOL . $class->generate();
+    return $class;
   }
 
   /**
-   * @return string
+   * @return ClassGenerator
    */
   public function generatePlural()
   {
@@ -102,7 +103,7 @@ class ResponseGenerator extends AbstractGenerator
       'ResponseArray'
     );
 
-    return '<?php' . PHP_EOL . PHP_EOL . $class->generate();
+    return $class;
   }
 
   /**

@@ -23,6 +23,21 @@ class Generator
   private $config;
 
   /**
+   * @var string
+   */
+  public static $namespace;
+
+  /**
+   * @var string
+   */
+  public static $indentation = '  ';
+
+  /**
+   * @var bool
+   */
+  public static $force;
+
+  /**
    * @param PhrestSDK $sdk
    * @param string    $namespace
    */
@@ -32,7 +47,7 @@ class Generator
     $this->config = $this->sdk->app->di->get('config');
 
     Files::$outputDir = $this->sdk->srcDir;
-    Files::$namespace = $namespace;
+    Generator::$namespace = rtrim($namespace, '\\');
   }
 
   /**
@@ -52,12 +67,9 @@ class Generator
       $this->printMessage($version . '...');
       foreach ($api as $entityName => $entity)
       {
+        $entity = $this->vaidateEntityConfig($entityName, $entity);
+
         Files::initializeFolders($version, $entityName);
-
-        // Controllers
-        echo (new ControllerGenerator($version, $entityName, $entity))->generate();
-
-        Files::saveController(new ControllerGenerator($version, $entityName, $entity));
 
         if (isset($entity->model))
         {
@@ -90,10 +102,84 @@ class Generator
             )
           );
         }
+
+        // Controllers
+        Files::saveController(
+          new ControllerGenerator(
+            $version,
+            $entityName,
+            $entity
+          )
+        );
       }
     }
 
-    $this->printMessage("All done, Remember to add the files to git!");
+    $this->printMessage("All done, Remember to add the files to VCS!");
+  }
+
+  /**
+   * @param string $entityName
+   * @param Config $entity
+   */
+  public function vaidateEntityConfig($entityName, $entity)
+  {
+    if (substr($entityName, -1) != 's')
+    {
+      $this->printMessage(
+        "Entity: {$entityName} doesn't end with 's'. Strange names might occur"
+      );
+    }
+
+    if (empty($entity->requests))
+    {
+      $this->printMessage(
+        "Entity: {$entityName} doesn't have any requests set up for it."
+        . " Controllers, exceptions, requests will be skipped."
+      );
+    }
+    else
+    {
+      foreach ($entity->requests as $requestMethod => $actions)
+      {
+        foreach ($actions as $actionName => $action)
+        {
+          if (empty($action->url))
+          {
+            $this->printMessage(
+              "Entity: {$entityName}::{$actionName} doesn't have a url set."
+              . " This action will be skipped."
+            );
+            $entity->requests->$requestMethod->$actionName = false;
+          }
+
+          if (!empty($action->throws))
+          {
+            if (!empty($action->throws->extends))
+            {
+              if (!class_exists("Phrest\\API\\Exceptions\\" . $action->throws->extends))
+              {
+                $this->printMessage(
+                  "Entity: {$entityName}::{$actionName} Unknown exception: "
+                  . "Phrest\\API\\Exceptions\\" . $action->throws->extends
+                  . ". This extension will be removed."
+                );
+                $action->throws->extends = false;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    if (empty($entity->model))
+    {
+      $this->printMessage(
+        "Entity: {$entityName} doesn't have a model definition. Models and "
+        . "responses will be skipped."
+      );
+    }
+
+    return $entity;
   }
 
   /**

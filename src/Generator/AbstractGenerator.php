@@ -2,6 +2,8 @@
 
 namespace Phrest\SDK\Generator;
 
+use Phrest\SDK\Generator;
+
 abstract class AbstractGenerator implements GeneratorInterface
 {
   /**

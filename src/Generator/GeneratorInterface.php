@@ -5,7 +5,7 @@ namespace Phrest\SDK\Generator;
 interface GeneratorInterface
 {
   /**
-   * Process and generate code/files
+   * Process and create code/files
    */
-  public function generate();
+  public function create();
 }

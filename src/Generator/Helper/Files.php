@@ -2,6 +2,7 @@
 
 namespace Phrest\SDK\Generator\Helper;
 
+use Phrest\SDK\Generator;
 use Phrest\SDK\Generator\Controller\ControllerGenerator;
 use Phrest\SDK\Generator\Exception\ExceptionGenerator;
 use Phrest\SDK\Generator\Model\ModelGenerator;
@@ -13,16 +14,6 @@ class Files
    * @var string
    */
   public static $outputDir;
-
-  /**
-   * @var string
-   */
-  public static $namespace;
-
-  /**
-   * @var bool
-   */
-  public static $force;
 
   /**
    * @param string $version
@@ -81,20 +72,35 @@ class Files
   public static function saveModel($generator)
   {
     $generator->setNamespace(
-      self::$namespace . '\\'
+      Generator::$namespace . '\\'
       . $generator->getVersion() . '\\'
       . 'Models\\'
       . $generator->getEntityName()
     );
 
+    $filePath = self::formPath(
+      $generator->getVersion(),
+      'Models',
+      $generator->getEntityName(),
+      $generator->getName()
+    );
+
+    $class = $generator->create();
+
+    if (is_file($filePath))
+    {
+      $diff = new ClassDiff(
+        $filePath,
+        $class->getNamespaceName() . '\\' . $class->getName(),
+        $class
+      );
+
+      $class = $diff->merge();
+    }
+
     file_put_contents(
-      self::formPath(
-        $generator->getVersion(),
-        'Models',
-        $generator->getEntityName(),
-        $generator->getName()
-      ),
-      $generator->generate()
+      $filePath,
+      self::generatorToString($class)
     );
   }
 
@@ -104,30 +110,60 @@ class Files
   public static function saveResponse($generator)
   {
     $generator->setNamespace(
-      self::$namespace . '\\'
+      Generator::$namespace . '\\'
       . $generator->getVersion() . '\\'
       . 'Responses\\'
       . $generator->getEntityName()
     );
 
-    file_put_contents(
-      self::formPath(
-        $generator->getVersion(),
-        'Responses',
-        $generator->getEntityName(),
-        substr($generator->getName(), 0, -1) . 'Response'
-      ),
-      $generator->setType(ResponseGenerator::SINGULAR)->generate()
+    $filePath = self::formPath(
+      $generator->getVersion(),
+      'Responses',
+      $generator->getEntityName(),
+      substr($generator->getName(), 0, -1) . 'Response'
     );
 
+    $class = $generator->setType(ResponseGenerator::SINGULAR)->create();
+
+    if (is_file($filePath))
+    {
+      $diff = new ClassDiff(
+        $filePath,
+        $class->getNamespaceName() . '\\' . $class->getName(),
+        $class
+      );
+
+      $class = $diff->merge();
+    }
+
     file_put_contents(
-      self::formPath(
-        $generator->getVersion(),
-        'Responses',
-        $generator->getEntityName(),
-        $generator->getName() . 'Response'
-      ),
-      $generator->setType(ResponseGenerator::PLURAL)->generate()
+      $filePath,
+      self::generatorToString($class)
+    );
+
+    $filePath = self::formPath(
+      $generator->getVersion(),
+      'Responses',
+      $generator->getEntityName(),
+      $generator->getName() . 'Response'
+    );
+
+    $class = $generator->setType(ResponseGenerator::PLURAL)->create();
+
+    if (is_file($filePath))
+    {
+      $diff = new ClassDiff(
+        $filePath,
+        $class->getNamespaceName() . '\\' . $class->getName(),
+        $class
+      );
+
+      $class = $diff->merge();
+    }
+
+    file_put_contents(
+      $filePath,
+      self::generatorToString($class)
     );
   }
 
@@ -137,20 +173,35 @@ class Files
   public static function saveException($generator)
   {
     $generator->setNamespace(
-      self::$namespace . '\\'
+      Generator::$namespace . '\\'
       . $generator->getVersion() . '\\'
       . 'Exceptions\\'
       . $generator->getEntityName()
     );
 
+    $filePath = self::formPath(
+      $generator->getVersion(),
+      'Exceptions',
+      $generator->getEntityName(),
+      $generator->getException()
+    );
+
+    $class = $generator->create();
+
+    if (is_file($filePath))
+    {
+      $diff = new ClassDiff(
+        $filePath,
+        $class->getNamespaceName() . '\\' . $class->getName(),
+        $class
+      );
+
+      $class = $diff->merge();
+    }
+
     file_put_contents(
-      self::formPath(
-        $generator->getVersion(),
-        'Exceptions',
-        $generator->getEntityName(),
-        $generator->getException()
-      ),
-      $generator->generate()
+      $filePath,
+      self::generatorToString($class)
     );
   }
 
@@ -160,20 +211,45 @@ class Files
   public static function saveController($generator)
   {
     $generator->setNamespace(
-      self::$namespace . '\\'
+      Generator::$namespace . '\\'
       . $generator->getVersion() . '\\'
       . 'Controllers\\'
       . $generator->getEntityName()
     );
 
-    file_put_contents(
-      self::formPath(
-        $generator->getVersion(),
-        'Controllers',
-        $generator->getEntityName(),
-        $generator->getEntityName() . 'Controller'
-      ),
-      $generator->generate()
+    $filePath = self::formPath(
+      $generator->getVersion(),
+      'Controllers',
+      $generator->getEntityName(),
+      $generator->getEntityName() . 'Controller'
     );
+
+    $class = $generator->create();
+
+    if (is_file($filePath))
+    {
+      $diff = new ClassDiff(
+        $filePath,
+        $class->getNamespaceName() . '\\' . $class->getName(),
+        $class
+      );
+
+      $class = $diff->merge();
+    }
+
+    file_put_contents(
+      $filePath,
+      self::generatorToString($class)
+    );
+  }
+
+  /**
+   * @param \Zend\Code\Generator\GeneratorInterface $class
+   *
+   * @return string
+   */
+  public static function generatorToString($class)
+  {
+    return '<?php' . PHP_EOL . PHP_EOL . $class->generate();
   }
 }

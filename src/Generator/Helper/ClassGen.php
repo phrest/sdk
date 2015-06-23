@@ -2,6 +2,7 @@
 
 namespace Phrest\SDK\Generator\Helper;
 
+use Phrest\SDK\Generator;
 use Zend\Code\Generator\ClassGenerator;
 use Zend\Code\Generator\DocBlock\Tag;
 use Zend\Code\Generator\DocBlockGenerator;
@@ -11,10 +12,6 @@ use Zend\Code\Generator\PropertyGenerator;
 
 class ClassGen
 {
-  /**
-   * @var string
-   */
-  public static $indentation = '  ';
 
   /**
    * @param        $name
@@ -40,7 +37,7 @@ class ClassGen
     ->setNamespaceName($namespace)
     ->setExtendedClass($extends)
     ->setImplementedInterfaces($implements)
-    ->setIndentation(ClassGen::$indentation);
+    ->setIndentation(Generator::$indentation);
 
     foreach ($uses as $use)
     {
@@ -68,15 +65,15 @@ class ClassGen
     $property = (new PropertyGenerator($name, $default))
     ->setVisibility($visibility);
 
-    $property->setIndentation(self::$indentation);
+    $property->setIndentation(Generator::$indentation);
 
     $docBlock = new DocBlockGenerator();
-    $docBlock->setIndentation(self::$indentation);
+    $docBlock->setIndentation(Generator::$indentation);
 
     $tag = new Tag();
     $tag->setName('var');
     $tag->setContent($type);
-    $tag->setIndentation(self::$indentation);
+    $tag->setIndentation(Generator::$indentation);
 
     $docBlock->setTag($tag);
 
@@ -119,7 +116,7 @@ class ClassGen
     ->setBody($body)
     ->setVisibility($visibility)
     ->setDocBlock($docblock)
-    ->setIndentation(self::$indentation);
+    ->setIndentation(Generator::$indentation);
   }
 
   /**

@@ -63,9 +63,9 @@ class ExceptionGenerator extends AbstractGenerator
   }
 
   /**
-   * @return string
+   * @return ClassGenerator
    */
-  public function generate()
+  public function create()
   {
     $class = ClassGen::classGen(
       $this->exception,
@@ -78,16 +78,7 @@ class ExceptionGenerator extends AbstractGenerator
       $class->setExtendedClass($this->extends);
     }
 
-    $property = ClassGen::property(
-      'message',
-      'protected',
-      $this->message,
-      'string'
-    );
-
-    $class->addPropertyFromGenerator($property);
-
-    return '<?php' . PHP_EOL . PHP_EOL . $class->generate();
+    return $class;
   }
 
   /**
