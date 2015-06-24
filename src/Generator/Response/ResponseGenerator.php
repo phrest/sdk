@@ -36,12 +36,12 @@ class ResponseGenerator extends AbstractGenerator
   /**
    * @param string $version
    * @param string $entityName
-   * @param        $columns
+   * @param        $entityDefinition
    */
-  public function __construct($version, $entityName, $columns)
+  public function __construct($version, $entityName, $entityDefinition)
   {
     $this->name = $entityName;
-    $this->columns = $columns;
+    $this->columns = $entityDefinition;
     parent::__construct($version, $entityName);
   }
 

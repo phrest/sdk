@@ -91,7 +91,7 @@ class ClassDiff
     }
 
     if (in_array(
-      $this->currentClassGenerator->getExtendedClass(),
+      ltrim($this->currentClassGenerator->getExtendedClass(), '\\'),
       $this->currentClassGenerator->getUses()
     ))
     {

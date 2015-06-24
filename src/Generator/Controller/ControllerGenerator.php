@@ -64,14 +64,17 @@ class ControllerGenerator extends AbstractGenerator
           continue;
         }
 
-        $params = $this->generateParamsFromUrl($action->url);
+        $getParams = $this->generateGetParamsFromUrl($action->url);
+        $postParams = $this->generatePostParams($action);
+
         $docblock = $this->createDocblockForMethod(
           $requestMethod,
           $action,
-          $params
+          $getParams,
+          $postParams
         );
 
-        $method = ClassGen::method($actionName, $params, 'public');
+        $method = ClassGen::method($actionName, $getParams, 'public');
         $method->setDocBlock($docblock);
 
         $body = $this->createBodyForMethod($action);
@@ -90,13 +93,19 @@ class ControllerGenerator extends AbstractGenerator
   }
 
   /**
-   * @param string               $requestMethod
-   * @param Config               $action
-   * @param ParameterGenerator[] $params
+   * @param string $requestMethod
+   * @param Config $action
+   * @param ParameterGenerator[] $getParams
+   * @param ParameterGenerator[] $postParams
    *
    * @return DocBlockGenerator
    */
-  private function createDocblockForMethod($requestMethod, $action, $params)
+  private function createDocblockForMethod(
+    $requestMethod,
+    $action,
+    $getParams,
+    $postParams
+  )
   {
     if (empty($action->doc))
     {
@@ -112,19 +121,21 @@ class ControllerGenerator extends AbstractGenerator
       strtoupper($requestMethod) . ': ' . $action->url
     );
 
-    foreach ($params as $param)
+    foreach ($getParams as $param)
     {
-      /*
-       * @param $paramName
-       */
+      //@param $paramName
       $docblock->setTag(new GenericTag('param', "\${$param->getName()}"));
+    }
+
+    foreach ($postParams as $postParam)
+    {
+      //@postParam('paramName')
+      $docblock->setTag(new GenericTag('postParam', "('{$postParam->getName()}')"));
     }
 
     if (!empty($action->throws))
     {
-      /*
-       * @throws \Name\Space\Version\Exceptions\EntityName\SomethingException
-       */
+      //@throws \Name\Space\Version\Exceptions\EntityName\SomethingException
       $docblock->setTag(
         new GenericTag(
           'throws',
@@ -141,9 +152,7 @@ class ControllerGenerator extends AbstractGenerator
 
     if (!empty($action->returns))
     {
-      /*
-       * @returns \Name\Space\Version\EntityName\EntityName(s)?Response
-       */
+      //@returns \Name\Space\Version\EntityName\EntityName(s)?Response
       $docblock->setTag(
         new GenericTag(
           'returns',
@@ -235,7 +244,7 @@ class ControllerGenerator extends AbstractGenerator
    *
    * @return ParameterGenerator[]
    */
-  private function generateParamsFromUrl($url)
+  private function generateGetParamsFromUrl($url)
   {
     $matches = [];
     preg_match_all('#\{(\w+):[^\}]+\}#i', $url, $matches);
@@ -244,6 +253,26 @@ class ControllerGenerator extends AbstractGenerator
     foreach ($matches[1] as $param)
     {
       $params[] = new ParameterGenerator($param);
+    }
+
+    return $params;
+  }
+
+  /**
+   * @param Config $action
+   *
+   * @return ParameterGenerator[]
+   */
+  private function generatePostParams($action)
+  {
+    $params = [];
+
+    if (!empty($action->postParams))
+    {
+      foreach ($action->postParams as $param => $type)
+      {
+        $params[] = new ParameterGenerator($param, $type);
+      }
     }
 
     return $params;

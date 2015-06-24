@@ -33,12 +33,12 @@ class ModelGenerator extends AbstractGenerator
   /**
    * @param string $version
    * @param string $entityName
-   * @param        $columns
+   * @param        $column
    */
-  public function __construct($version, $entityName, $columns)
+  public function __construct($version, $entityName, $column)
   {
     $this->name = $entityName;
-    $this->columns = $columns;
+    $this->columns = $column;
     parent::__construct($version, $entityName);
   }
 

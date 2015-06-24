@@ -5,6 +5,7 @@ namespace Phrest\SDK\Generator\Helper;
 use Phrest\SDK\Generator;
 use Zend\Code\Generator\ClassGenerator;
 use Zend\Code\Generator\DocBlock\Tag;
+use Zend\Code\Generator\DocBlock\Tag\GenericTag;
 use Zend\Code\Generator\DocBlockGenerator;
 use Zend\Code\Generator\MethodGenerator;
 use Zend\Code\Generator\ParameterGenerator;
@@ -121,6 +122,7 @@ class ClassGen
 
   /**
    * @param ParameterGenerator[] $params
+   *
    * @return MethodGenerator
    */
   public static function constructor($params)
@@ -135,6 +137,32 @@ class ClassGen
     }
 
     $constructor->setBody($body);
+
     return $constructor;
+  }
+
+  /**
+   * @param string $name
+   * @param string $type
+   *
+   * @return MethodGenerator
+   */
+  public static function setter($name, $type)
+  {
+    $setter = self::method(
+      'set' . ucfirst($name),
+      [
+        new ParameterGenerator($name, $type)
+      ]
+    );
+
+    $setter->getDocBlock()->setTag(new GenericTag('return', 'static'));
+
+    $body = "\$this->{$name} = \${$name};" . PHP_EOL
+    . "return \$this;" . PHP_EOL;
+
+    $setter->setBody($body);
+
+    return $setter;
   }
 }

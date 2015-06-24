@@ -7,6 +7,7 @@ use Phrest\SDK\Generator;
 use Phrest\SDK\Generator\Controller\ControllerGenerator;
 use Phrest\SDK\Generator\Exception\ExceptionGenerator;
 use Phrest\SDK\Generator\Model\ModelGenerator;
+use Phrest\SDK\Generator\Request\RequestGenerator;
 use Phrest\SDK\Generator\Response\ResponseGenerator;
 
 class Files
@@ -72,7 +73,7 @@ class Files
    */
   public static function saveCollectionConfig($config)
   {
-    $folder = self::$outputDir . '/Config/';
+    $folder = self::$outputDir . '/Config';
 
     yaml_emit_file(
       $folder . '/collections.yaml', $config
@@ -94,6 +95,44 @@ class Files
     $filePath = self::formPath(
       $generator->getVersion(),
       'Models',
+      $generator->getEntityName(),
+      $generator->getName()
+    );
+
+    $class = $generator->create();
+
+    if (is_file($filePath))
+    {
+      $diff = new ClassDiff(
+        $filePath,
+        $class->getNamespaceName() . '\\' . $class->getName(),
+        $class
+      );
+
+      $class = $diff->merge();
+    }
+
+    file_put_contents(
+      $filePath,
+      self::generatorToString($class)
+    );
+  }
+
+  /**
+   * @param RequestGenerator $generator
+   */
+  public static function saveRequest($generator)
+  {
+    $generator->setNamespace(
+      Generator::$namespace . '\\'
+      . $generator->getVersion() . '\\'
+      . 'Requests\\'
+      . $generator->getEntityName()
+    );
+
+    $filePath = self::formPath(
+      $generator->getVersion(),
+      'Requests',
       $generator->getEntityName(),
       $generator->getName()
     );

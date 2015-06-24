@@ -8,6 +8,7 @@ use Phrest\SDK\Generator\Controller\ControllerGenerator;
 use Phrest\SDK\Generator\Exception\ExceptionGenerator;
 use Phrest\SDK\Generator\Helper\Files;
 use Phrest\SDK\Generator\Model\ModelGenerator;
+use Phrest\SDK\Generator\Request\RequestGenerator;
 use Phrest\SDK\Generator\Response\ResponseGenerator;
 
 class Generator
@@ -90,6 +91,28 @@ class Generator
           Files::saveModel(
             new ModelGenerator($version, $entityName, $columns)
           );
+
+          // Requests
+          foreach ($entity->requests as $requestMethod => $actions)
+          {
+            foreach ($actions as $actionName => $action)
+            {
+              if (empty($action))
+              {
+                continue;
+              }
+              Files::saveRequest(
+                new RequestGenerator(
+                  $version,
+                  $entityName,
+                  $entity->model,
+                  $requestMethod,
+                  $actionName,
+                  $action
+                )
+              );
+            }
+          }
 
           // Responses
           Files::saveResponse(

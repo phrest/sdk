@@ -2,9 +2,7 @@
 
 namespace Phrest\SDK\Request;
 
-use Phrest\SDK\PhrestSDK;
-
-abstract class AbstractRequest
+abstract class AbstractRequest implements RequestInterface
 {
   const METHOD_OPTIONS = 'OPTIONS';
   const METHOD_POST = 'POST';
@@ -13,21 +11,4 @@ abstract class AbstractRequest
   const METHOD_GET = 'GET';
   const METHOD_PUT = 'PUT';
   const METHOD_DELETE = 'DELETE';
-
-  /**
-   * @param                $method
-   * @param                $path
-   * @param RequestOptions $options
-   *
-   * @return \Phrest\API\Responses\Response|string
-   * @throws \Phalcon\Exception
-   */
-  protected static function getResponse(
-    $method,
-    $path,
-    RequestOptions $options = null
-  )
-  {
-    return PhrestSDK::getResponse($method, $path, $options);
-  }
 }
