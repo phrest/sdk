@@ -4,7 +4,7 @@ namespace Phrest\SDK\Request;
 
 use Phrest\SDK\PhrestSDK;
 
-abstract class Request
+abstract class AbstractRequest
 {
   const METHOD_OPTIONS = 'OPTIONS';
   const METHOD_POST = 'POST';

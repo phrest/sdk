@@ -2,6 +2,7 @@
 
 namespace Phrest\SDK\Generator\Helper;
 
+use Phalcon\Config;
 use Phrest\SDK\Generator;
 use Phrest\SDK\Generator\Controller\ControllerGenerator;
 use Phrest\SDK\Generator\Exception\ExceptionGenerator;
@@ -64,6 +65,18 @@ class Files
     . $type . '/'
     . $entityName . '/'
     . $className . '.php';
+  }
+
+  /**
+   * @param array $config
+   */
+  public static function saveCollectionConfig($config)
+  {
+    $folder = self::$outputDir . '/Config/';
+
+    yaml_emit_file(
+      $folder . '/collections.yaml', $config
+    );
   }
 
   /**

@@ -2,7 +2,7 @@
 
 namespace Phrest\SDK\Request;
 
-class PATCHRequest extends Request
+class PATCHRequest extends AbstractRequest
 {
   protected $path;
 

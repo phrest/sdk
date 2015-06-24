@@ -5,7 +5,7 @@ namespace Phrest\SDK\Request;
 /**
  * GETRequest
  */
-class GETRequest extends Request
+class GETRequest extends AbstractRequest
 {
   /**
    * Perform a GET request to the API

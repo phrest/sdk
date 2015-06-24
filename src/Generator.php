@@ -3,6 +3,7 @@
 namespace Phrest\SDK;
 
 use Phalcon\Config;
+use Phrest\SDK\Generator\Config\ConfigGenerator;
 use Phrest\SDK\Generator\Controller\ControllerGenerator;
 use Phrest\SDK\Generator\Exception\ExceptionGenerator;
 use Phrest\SDK\Generator\Helper\Files;
@@ -39,12 +40,13 @@ class Generator
 
   /**
    * @param PhrestSDK $sdk
+   * @param Config    $config
    * @param string    $namespace
    */
-  public function __construct(PhrestSDK $sdk, $namespace = 'SDK')
+  public function __construct(PhrestSDK $sdk, $config, $namespace = 'SDK')
   {
     $this->sdk = $sdk;
-    $this->config = $this->sdk->app->di->get('config');
+    $this->config = $config;
 
     Files::$outputDir = $this->sdk->srcDir;
     Generator::$namespace = rtrim($namespace, '\\');
@@ -55,14 +57,23 @@ class Generator
    */
   public function generate()
   {
-    $this->printMessage("");
-    $this->printMessage('Creating Models, Controllers, Requests, Responses, and Exceptions');
+    $this->printMessage('');
+
+    $this->printMessage(
+      'Creating Collection config'
+    );
+
+    Files::saveCollectionConfig((new ConfigGenerator($this->config))->create());
+
+    $this->printMessage(
+      'Creating Models, Controllers, Requests, Responses, and Exceptions'
+    );
 
     /**
      * @var string $name
      * @var Config $entity
      */
-    foreach ($this->config->apis as $version => $api)
+    foreach ($this->config as $version => $api)
     {
       $this->printMessage($version . '...');
       foreach ($api as $entityName => $entity)
@@ -73,18 +84,16 @@ class Generator
 
         if (isset($entity->model))
         {
+          $columns = $entity->model->columns;
+
           // Models
           Files::saveModel(
-            new ModelGenerator($version, $entityName, $entity->model->columns)
+            new ModelGenerator($version, $entityName, $columns)
           );
 
           // Responses
           Files::saveResponse(
-            new ResponseGenerator(
-              $version,
-              $entityName,
-              $entity->model->columns
-            )
+            new ResponseGenerator($version, $entityName, $columns)
           );
         }
 
@@ -93,23 +102,13 @@ class Generator
         foreach ($exceptions as $exception)
         {
           Files::saveException(
-            new ExceptionGenerator(
-              $version,
-              $entityName,
-              $exception->exception,
-              $exception->message,
-              $exception->extends
-            )
+            new ExceptionGenerator($version, $entityName, $exception)
           );
         }
 
         // Controllers
         Files::saveController(
-          new ControllerGenerator(
-            $version,
-            $entityName,
-            $entity
-          )
+          new ControllerGenerator($version, $entityName, $entity)
         );
       }
     }

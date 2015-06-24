@@ -44,21 +44,17 @@ class ExceptionGenerator extends AbstractGenerator
    * @param string $version
    * @param string $entityName
    * @param        $exception
-   * @param        $message
-   * @param        $extends
    */
   public function __construct(
     $version,
     $entityName,
-    $exception,
-    $message,
-    $extends
+    $exception
   )
   {
     $this->entityName = $entityName;
-    $this->exception = $exception;
-    $this->message = $message;
-    $this->extends = $extends;
+    $this->exception = $exception->exception;
+    $this->message = $exception->message;
+    $this->extends = $exception->extends;
     parent::__construct($version, $entityName);
   }
 

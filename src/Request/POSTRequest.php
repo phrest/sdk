@@ -2,7 +2,7 @@
 
 namespace Phrest\SDK\Request;
 
-class POSTRequest extends Request
+class POSTRequest extends AbstractRequest
 {
   protected $path;
 

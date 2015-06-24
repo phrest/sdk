@@ -2,7 +2,7 @@
 
 namespace Phrest\SDK\Request;
 
-class DELETERequest extends Request
+class DELETERequest extends AbstractRequest
 {
   public static function deleteByPath($path, RequestOptions $options = null)
   {
