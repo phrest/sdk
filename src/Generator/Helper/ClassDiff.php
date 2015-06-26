@@ -132,6 +132,7 @@ class ClassDiff
 
   /**
    * Copied from ClassGenerator::fromReflection and tweaked slightly
+   *
    * @param ClassReflection $classReflection
    *
    * @return ClassGenerator
@@ -205,7 +206,13 @@ class ClassDiff
       if ($reflectionMethod->getDeclaringClass()->getName() == $className)
       {
         $method = MethodGenerator::fromReflection($reflectionMethod);
-        $method->setBody(preg_replace("/^\s+/m", '', $method->getBody()));
+        $method->setBody(
+          preg_replace(
+            "/^" . Generator::$indentation . Generator::$indentation . "/m",
+            '',
+            $method->getBody()
+          )
+        );
         $method->setIndentation(Generator::$indentation);
         $methods[] = $method;
       }
