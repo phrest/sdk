@@ -66,9 +66,9 @@ class ResponseGenerator extends AbstractGenerator
   public function generateSingular()
   {
     $class = ClassGen::classGen(
-      substr($this->name, 0, -1) . 'Response',
+      $this->name . 'Response',
       $this->namespace,
-      ['Phrest\API\Responses\Response'],
+      ['Phrest\API\Response\Response'],
       'Response'
     );
 
@@ -97,9 +97,9 @@ class ResponseGenerator extends AbstractGenerator
   public function generatePlural()
   {
     $class = ClassGen::classGen(
-      $this->name . 'Response',
+      $this->name . 'sResponse',
       $this->namespace,
-      ['Phrest\API\Responses\ResponseArray'],
+      ['Phrest\API\Response\ResponseArray'],
       'ResponseArray'
     );
 

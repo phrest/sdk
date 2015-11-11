@@ -120,6 +120,8 @@ class Files
 
   /**
    * @param RequestGenerator $generator
+   *
+   * @return RequestGenerator
    */
   public static function saveRequest($generator)
   {
@@ -154,6 +156,8 @@ class Files
       $filePath,
       self::generatorToString($class)
     );
+
+    return $generator;
   }
 
   /**
@@ -172,7 +176,7 @@ class Files
       $generator->getVersion(),
       'Responses',
       $generator->getEntityName(),
-      substr($generator->getName(), 0, -1) . 'Response'
+      $generator->getName() . 'Response'
     );
 
     $class = $generator->setType(ResponseGenerator::SINGULAR)->create();
@@ -197,7 +201,7 @@ class Files
       $generator->getVersion(),
       'Responses',
       $generator->getEntityName(),
-      $generator->getName() . 'Response'
+      $generator->getName() . 'sResponse'
     );
 
     $class = $generator->setType(ResponseGenerator::PLURAL)->create();
@@ -275,6 +279,36 @@ class Files
       $generator->getEntityName(),
       $generator->getEntityName() . 'Controller'
     );
+
+    $class = $generator->create();
+
+    if (is_file($filePath))
+    {
+      $diff = new ClassDiff(
+        $filePath,
+        $class->getNamespaceName() . '\\' . $class->getName(),
+        $class
+      );
+
+      $class = $diff->merge();
+    }
+
+    file_put_contents(
+      $filePath,
+      self::generatorToString($class)
+    );
+  }
+
+  /**
+   * @param Generator\SDK\SDKGenerator $generator
+   */
+  public static function saveSDK($generator)
+  {
+    $generator->setNamespace(Generator::$namespace);
+
+    $filePath = self::$outputDir . '/'
+      . $generator->getVersion() . '/'
+      . $generator->getName() . '.php';
 
     $class = $generator->create();
 

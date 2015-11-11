@@ -29,7 +29,7 @@ class ConfigGenerator implements GeneratorInterface
   {
     $collectionConfigs = [];
 
-    foreach ($this->buildConfig as $version => $collections)
+    foreach ($this->buildConfig->versions as $version => $collections)
     {
       $collectionConfig = [];
       foreach ($collections as $entityName => $entity)
@@ -42,8 +42,9 @@ class ConfigGenerator implements GeneratorInterface
           }
         }
       }
-      $collectionConfigs[$version] = $collectionConfig;
+      $collectionConfigs['versions'][$version] = $collectionConfig;
     }
+    $collectionConfigs['namespace'] = $this->buildConfig->namespace;
     return $collectionConfigs;
   }
 }

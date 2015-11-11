@@ -10,8 +10,9 @@ use Phalcon\Exception;
 use Phalcon\Mvc\Dispatcher;
 use Phalcon\Registry;
 use Phrest\API\DI\PhrestDI;
+use Phrest\API\Enums\RequestMethodEnum;
 use Phrest\API\Request\PhrestRequest;
-use Phrest\API\Responses\Response;
+use Phrest\API\Response\Response;
 use Phrest\API\PhrestAPI;
 use Phalcon\DI as PhalconDI;
 use Phrest\SDK\Request\RequestOptions;
@@ -238,7 +239,7 @@ class PhrestSDK
    */
   public static function get($path, RequestOptions $options = null)
   {
-    return self::getResponse(PhrestRequest::METHOD_GET, $path, $options);
+    return self::getResponse(RequestMethodEnum::GET, $path, $options);
   }
 
   /**
@@ -251,7 +252,7 @@ class PhrestSDK
    */
   public static function post($path, $params = [])
   {
-    return self::getResponse(PhrestRequest::METHOD_POST, $path, $params);
+    return self::getResponse(RequestMethodEnum::POST, $path, $params);
   }
 
   /**
@@ -265,7 +266,7 @@ class PhrestSDK
    */
   public static function put($path, $params = [])
   {
-    return self::getResponse(PhrestRequest::METHOD_PUT, $path);
+    return self::getResponse(RequestMethodEnum::PUT, $path);
   }
 
   /**
@@ -279,7 +280,7 @@ class PhrestSDK
    */
   public static function patch($path, $params = [])
   {
-    return self::getResponse(PhrestRequest::METHOD_PATCH, $path, $params);
+    return self::getResponse(RequestMethodEnum::PATCH, $path, $params);
   }
 
   /**
@@ -291,7 +292,7 @@ class PhrestSDK
    */
   public static function delete($path)
   {
-    return self::getResponse(PhrestRequest::METHOD_DELETE, $path);
+    return self::getResponse(RequestMethodEnum::DELETE, $path);
   }
 
   /**

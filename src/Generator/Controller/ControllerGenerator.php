@@ -179,6 +179,21 @@ class ControllerGenerator extends AbstractGenerator
   {
     $body = '//todo' . PHP_EOL;
 
+    if (!empty($action->postParams))
+    {
+      foreach ($action->postParams as $param => $type)
+      {
+        $body .= sprintf(
+          '$%s = $this->request->getPost(\'%s\', \'%s\');%s',
+          $param,
+          $param,
+          $type,
+          PHP_EOL
+        );
+      }
+      $body .= PHP_EOL;
+    }
+
     if (!empty($action->throws))
     {
       $exceptionClass = sprintf(
@@ -200,6 +215,7 @@ class ControllerGenerator extends AbstractGenerator
         $action->throws->exception,
         $action->throws->message
       );
+      $body .= PHP_EOL;
     }
 
     if (!empty($action->returns))

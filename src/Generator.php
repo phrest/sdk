@@ -10,6 +10,7 @@ use Phrest\SDK\Generator\Helper\Files;
 use Phrest\SDK\Generator\Model\ModelGenerator;
 use Phrest\SDK\Generator\Request\RequestGenerator;
 use Phrest\SDK\Generator\Response\ResponseGenerator;
+use Phrest\SDK\Generator\SDK\SDKGenerator;
 
 class Generator
 {
@@ -23,6 +24,9 @@ class Generator
    * @var Config
    */
   private $config;
+
+  /** @var string */
+  public static $name;
 
   /**
    * @var string
@@ -48,9 +52,15 @@ class Generator
   {
     $this->sdk = $sdk;
     $this->config = $config;
+    self::$name = $config->name;
 
-    Files::$outputDir = $this->sdk->srcDir;
+    Files::$outputDir = rtrim($this->sdk->srcDir, '/');
     Generator::$namespace = rtrim($namespace, '\\');
+
+    if (getenv('FORCE'))
+    {
+      self::$force = true;
+    }
   }
 
   /**
@@ -74,8 +84,9 @@ class Generator
      * @var string $name
      * @var Config $entity
      */
-    foreach ($this->config as $version => $api)
+    foreach ($this->config->versions as $version => $api)
     {
+      $requests = [];
       $this->printMessage($version . '...');
       foreach ($api as $entityName => $entity)
       {
@@ -101,7 +112,8 @@ class Generator
               {
                 continue;
               }
-              Files::saveRequest(
+
+              $requests[] = Files::saveRequest(
                 new RequestGenerator(
                   $version,
                   $entityName,
@@ -134,6 +146,10 @@ class Generator
           new ControllerGenerator($version, $entityName, $entity)
         );
       }
+
+      Files::saveSDK(
+        new SDKGenerator($version, $this->config->name, $requests)
+      );
     }
 
     $this->printMessage("All done, Remember to add the files to VCS!");
@@ -142,15 +158,11 @@ class Generator
   /**
    * @param string $entityName
    * @param Config $entity
+   *
+   * @returns Config
    */
   public function vaidateEntityConfig($entityName, $entity)
   {
-    if (substr($entityName, -1) != 's')
-    {
-      $this->printMessage(
-        "Entity: {$entityName} doesn't end with 's'. Strange names might occur"
-      );
-    }
 
     if (empty($entity->requests))
     {

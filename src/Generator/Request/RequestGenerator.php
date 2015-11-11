@@ -75,6 +75,7 @@ class RequestGenerator extends AbstractGenerator
       $this->name,
       $this->namespace,
       [
+        'Phrest\API\Enums\RequestMethodEnum',
         'Phrest\SDK\Request\AbstractRequest',
         'Phrest\SDK\Request\RequestOptions',
         'Phrest\SDK\PhrestSDK'
@@ -261,7 +262,7 @@ class RequestGenerator extends AbstractGenerator
 
     $createBody .= 'return PhrestSDK::getResponse(' . PHP_EOL
       . Generator::$indentation
-      . 'self::METHOD_' . strtoupper($this->requestMethod) . ',' . PHP_EOL
+      . 'RequestMethodEnum::' . strtoupper($this->requestMethod) . ',' . PHP_EOL
       . Generator::$indentation
       . $path . ',' . PHP_EOL
       . Generator::$indentation
@@ -281,6 +282,14 @@ class RequestGenerator extends AbstractGenerator
     $this->namespace = $namespace;
 
     return $this;
+  }
+
+  /**
+   * @return string
+   */
+  public function getNamespace()
+  {
+    return $this->namespace;
   }
 
   /**
