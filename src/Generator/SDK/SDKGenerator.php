@@ -46,7 +46,8 @@ class SDKGenerator extends AbstractGenerator
     $uses = [
       'Phrest\API\DI\PhrestDIInterface',
       'Phrest\SDK\PhrestSDK',
-      'Phrest\SDK\Request\AbstractRequest'
+      'Phrest\SDK\Request\AbstractRequest',
+      $this->namespace . '\\' . Generator::$name . 'API'
     ];
 
     foreach($this->requests as $request)
@@ -56,7 +57,7 @@ class SDKGenerator extends AbstractGenerator
 
     $class = ClassGen::classGen(
       $this->name,
-      $this->namespace,
+      $this->namespace . '\\' . $this->version,
       $uses,
       'PhrestSDK'
     );
@@ -98,7 +99,7 @@ class SDKGenerator extends AbstractGenerator
   public function getConstructorBody()
   {
     return sprintf(
-      '$this->setApp(new %sAPI($di));%s%sparent::__construct(realpath(__DIR__));',
+      '$this->setApp(new %sAPI($di, null, true));%s%sparent::__construct(realpath(__DIR__));',
       Generator::$name,
       PHP_EOL,
       PHP_EOL

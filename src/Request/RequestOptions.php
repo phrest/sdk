@@ -362,6 +362,9 @@ class RequestOptions
     return $this->getQueryParam('offset');
   }
 
+  /**
+   * @return null|string
+   */
   public function isHttp()
   {
     return $this->getQueryParam('http');
