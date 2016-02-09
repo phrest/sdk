@@ -19,10 +19,12 @@
   "require":     {
     "ext-yaml": "*",
     "phrest/api": "dev-master",
+    "guzzlehttp/guzzle": "4.1.8",
+    "phalcon/incubator": "1.3.0.*@dev"
+  },
+  "require-dev": {
     "digitronac/phalcon-ide-stubs": "1.3.0",
     "zendframework/zend-code": "dev-master",
-    "guzzlehttp/guzzle": "4.1.8",
-    "phalcon/incubator": "1.3.0.*@dev",
     "nikic/php-parser": "^2.0"
   }
 }
