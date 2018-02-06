@@ -133,6 +133,7 @@ class PhrestSDK
     $request = $_REQUEST;
     $post = $_POST;
     $get = $_GET;
+    $server = $_SERVER;
 
     // Override the request params
     $_GET = $options ? $options->getGetParams() : [];
@@ -142,6 +143,9 @@ class PhrestSDK
     $_GET['method'] = $method;
     $_GET['_url'] = $path;
     $_REQUEST = ['type' => 'raw']; // todo is this requred?
+
+    // This is required for phalcon 3
+    $_SERVER['REQUEST_METHOD'] = $method;
 
     // Get current DI
     $defaultDI = DI::getDefault();
@@ -188,6 +192,7 @@ class PhrestSDK
     $_REQUEST = $request;
     $_POST = $post;
     $_GET = $get;
+    $_SERVER = $server;
 
     return $response;
   }
