@@ -18,7 +18,7 @@
   },
   "require":     {
     "ext-yaml": "*",
-    "phrest/api": "dev-master#bbf8a010580c3f7e0771ba888eba7424a2701ace",
+    "phrest/api": "dev-master#592bbf4617318aa4c94e2a42c818d9fe3ac1e346",
     "guzzlehttp/guzzle": "4.1.8",
     "phalcon/incubator": "1.3.0.*@dev"
   },
