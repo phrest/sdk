@@ -19,7 +19,7 @@
   "require":     {
     "ext-yaml": "*",
     "phrest/api": "dev-p2/T1554",
-    "guzzlehttp/guzzle": "5.3.3",
+    "guzzlehttp/guzzle": "~6.3",
     "phalcon/incubator": "1.3.0.*@dev"
   },
   "require-dev": {
