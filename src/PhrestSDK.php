@@ -3,20 +3,15 @@
 namespace Phrest\SDK;
 
 use GuzzleHttp\Client;
-use GuzzleHttp\Post\PostBody;
+use GuzzleHttp\Psr7\Request;
 use Phalcon\DI;
-use Phalcon\Events\Manager;
 use Phalcon\Exception;
-use Phalcon\Mvc\Dispatcher;
-use Phalcon\Registry;
 use Phrest\API\DI\PhrestDI;
 use Phrest\API\Enums\RequestMethodEnum;
-use Phrest\API\Request\PhrestRequest;
 use Phrest\API\Response\Response;
 use Phrest\API\PhrestAPI;
 use Phalcon\DI as PhalconDI;
 use Phrest\SDK\Request\RequestOptions;
-use GuzzleHttp\Message\Request;
 
 /**
  * SDK for Phalcon REST API
@@ -320,13 +315,13 @@ class PhrestSDK
     $client = new Client();
 
     // Build body
-    $body = new PostBody();
+    $body = [];
 
     if ($options)
     {
       foreach ($options->getPostParams() as $name => $value)
       {
-        $body->setField($name, $value);
+        $body[$name] = $value;
       }
     }
 
@@ -335,7 +330,7 @@ class PhrestSDK
       $method,
       $this->url . $path,
       [],
-      $body,
+      $body ? json_encode($body) : '',
       []
     );
 
