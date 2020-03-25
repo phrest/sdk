@@ -19,8 +19,7 @@
   "require":     {
     "ext-yaml": "*",
     "phrest/api": "dev-p2/T1554",
-    "guzzlehttp/guzzle": "5.3.3",
-    "phalcon/incubator": "4.0.5"
+    "guzzlehttp/guzzle": "5.3.3"
   },
   "require-dev": {
     "digitronac/phalcon-ide-stubs": "4.0.4",
