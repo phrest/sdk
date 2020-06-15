@@ -169,11 +169,13 @@ class PhrestSDK
     // todo post not picked up
     try
     {
+      $isInternal = $this->app->isInternalRequest;
+
       $this->app->isInternalRequest = true;
 
       $response = $this->app->handle($path);
 
-      $this->app->isInternalRequest = false;
+      $this->app->isInternalRequest = $isInternal;
     }
     catch (\Exception $e)
     {
