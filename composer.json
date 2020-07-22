@@ -18,7 +18,7 @@
   },
   "require":     {
     "ext-yaml": "*",
-    "phrest/api": "immanis",
+    "phrest/api": "dev-immanis",
     "guzzlehttp/guzzle": "5.3.3"
   },
   "require-dev": {
